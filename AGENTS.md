@@ -1,0 +1,30 @@
+# Project Guide
+
+## Identity and purpose
+
+Canonical project ID: `github-terrarium`.
+Personal-account repository: `AndrewDongminYoo/github-terrarium`.
+Generate a personalized, animated SVG terrarium from public GitHub activity and preserve its growth across daily GitHub Actions runs.
+
+## Start here
+
+- Read [README.md](README.md) for the current implementation status.
+- Read [the product specification](docs/specs/terrarium.md) for behavior and acceptance criteria.
+- Read [the technical design](docs/specs/architecture.md) for data, state, rendering, and publication contracts.
+- Follow [the implementation plan](docs/plans/implementation.md) for ordered work and verification.
+
+## Boundaries
+
+- This repository currently contains planning documents only; do not claim a working generator or scheduled workflow.
+- Keep durable source and documentation on `main`; publish generated images and growth state together on `output` after implementation.
+- Treat incomplete collection as failure, never as zero activity.
+- Keep scoring and rendering deterministic, and prevent repeated runs from earning duplicate growth.
+- Collect public activity only in v1 and exclude this repository's automated activity from scoring.
+- Preserve output history; never force-push generated state or silently reset an existing habitat.
+- Keep technical documentation and identifiers in English; preserve intentional localized product strings.
+
+## Verification
+
+For documentation changes, check relative links, examples, and `git diff --check`.
+Runtime commands in the implementation plan are future acceptance gates, not currently available commands.
+Declare runnable checks with the first implementation and keep this guide short.
