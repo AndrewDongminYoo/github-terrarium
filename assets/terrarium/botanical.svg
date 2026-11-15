@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360">
+  <defs>
+    <linearGradient id="glass-tint" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d4e6df" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#edf1dc" stop-opacity="0.16"/>
+    </linearGradient>
+    <linearGradient id="pond-water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#99c5bc"/>
+      <stop offset="1" stop-color="#517f79"/>
+    </linearGradient>
+    <symbol id="leaf" viewBox="0 0 36 18">
+      <path d="M1 16 Q6 -5 34 2 Q29 22 1 16Z" fill="#557c54"/>
+      <path d="M2 16 Q14 7 29 4" fill="none" stroke="#a8bd7f" stroke-width="1"/>
+    </symbol>
+    <symbol id="flower" viewBox="-12 -12 24 24">
+      <path d="M0 0 C-16 -10 -7 -17 0 -6 C7 -17 16 -10 6 0 C18 7 8 16 0 6 C-8 16 -18 7 -6 0Z" fill="#d69877"/>
+      <circle r="3" fill="#f2ce77"/>
+    </symbol>
+    <symbol id="mushroom" viewBox="-16 -24 32 30">
+      <path d="M-3 -8 L-4 5 Q0 8 4 5 L3 -8" fill="#dfcfac"/>
+      <path d="M-15 -8 Q-11 -26 1 -23 Q13 -21 15 -8 Q0 -3 -15 -8Z" fill="#ae6551"/>
+      <path d="M-8 -12 L-6 -13 M1 -17 L3 -17 M8 -11 L9 -10" stroke="#eed6b4" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="seedling" viewBox="-18 -32 36 38">
+      <path d="M0 4 Q3 -8 0 -20" stroke="#698350" stroke-width="2" fill="none"/>
+      <path d="M1 -12 Q-18 -12 -15 -27 Q-1 -29 1 -12Z" fill="#7e9c60"/>
+      <path d="M1 -18 Q3 -33 16 -29 Q17 -16 1 -18Z" fill="#a4b67a"/>
+    </symbol>
+    <symbol id="pond-creature" viewBox="-12 -6 24 12">
+      <path d="M-10 0 Q-2 -9 8 0 Q-2 9 -10 0 L-12 -4 L-12 4Z" fill="#e2b77b"/>
+      <circle cx="5" cy="-1" r="1" fill="#415d55"/>
+    </symbol>
+  </defs>
+</svg>

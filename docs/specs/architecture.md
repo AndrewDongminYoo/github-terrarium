@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection and persistent growth are implemented, while rendering and publication remain planned.
+Status: v1 design; public collection, persistent growth, and static rendering are implemented; motion, bundle validation, and publication remain planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -164,6 +164,11 @@ Discard raw collection payloads after the run and summarize errors without sensi
 Validate the subject, date continuity, nonnegative integer counts, null-day rules, XP bounds, and state-size limit before use and again before publication.
 
 ## Rendering contract
+
+`github_terrarium.render.render(state)` implements the static scene and returns UTF-8 SVG bytes after existing state validation.
+Renderer version 1 uses the original primitives in `assets/terrarium/botanical.svg`, packaged as `github_terrarium.art` so installed wheels do not require a source checkout.
+Fixed feature salts and named anchors isolate trait changes; exact slot limits are declared in `render.py`.
+The static renderer adds no CLI command; animation, independent SVG validation, browser-gallery evidence, and final visual approval remain follow-up work.
 
 Render SVG primitives, groups, paths, gradients, clip paths, and internal reusable symbols.
 Use native SVG for v1 rather than `foreignObject`; do not include scripts, remote fonts, external images, event handlers, or embedded HTML.

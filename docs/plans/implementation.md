@@ -1,6 +1,6 @@
 # GitHub Terrarium Implementation Plan
 
-Status: collection, normalization, and persistent growth implemented; the visual prototype is next.
+Status: collection, normalization, persistent growth, and static rendering implemented; motion, validation, and the reviewed gallery are next.
 Future build/validate/publish flags remain deferred to their implementation milestones.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
@@ -61,8 +61,8 @@ Traceability: AC-02, AC-03, AC-04, AC-06, and AC-12.
 
 ## Milestone 4: one complete visual prototype
 
-- [ ] Implement `render.py` and original assets in `assets/terrarium/`: glass vessel, layered soil, central plant, pond, seedlings, flowers/fireflies, and mushrooms.
-- [ ] Use fixed anchors and independent seeded variation so one changing trait does not rearrange the habitat.
+- [x] Implement `render.py` and original assets in `assets/terrarium/`: glass vessel, layered soil, central plant, pond, seedlings, flowers/fireflies, and mushrooms.
+- [x] Use fixed anchors and independent seeded variation so one changing trait does not rearrange the habitat.
 - [ ] Add leaf sway, firefly travel, and pond ripples through embedded CSS; add complete static and reduced-motion states.
 - [ ] Implement `validate.py` for XML structure, prohibited content/references, escaped text, and the agreed size/element/animation budgets.
 - [ ] Render the fixture gallery through HTML image elements and capture each persona at narrow and wide widths on light/dark host backgrounds.
