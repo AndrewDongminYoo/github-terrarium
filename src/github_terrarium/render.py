@@ -323,9 +323,11 @@ def render(state):
         _node(item, "circle", r=6, fill="#e8ca76", opacity="0.18")
         _node(item, "circle", r=2, fill="#c9a74c")
     identity = _node(root, "g", id="identity", fill="#3c5146", font_family="serif")
-    _node(
-        identity, "text", x=32, y=29, font_size=25
-    ).text = f"{subject['login']} / terrarium"
+    label = _node(identity, "text", x=32, y=29, font_size=25)
+    label.text = f"{subject['login']} / terrarium"
+    if len(subject["login"]) > 20:
+        label.set("textLength", "620")
+        label.set("lengthAdjust", "spacingAndGlyphs")
     _node(
         identity, "text", x=868, y=29, font_size=25, text_anchor="end"
     ).text = growth_stage.capitalize()

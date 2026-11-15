@@ -218,6 +218,18 @@ class RenderTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             render(state)
 
+    def test_long_login_has_bounded_identity_extent_without_losing_text(self):
+        state = habitat()
+        state["subject"]["login"] = "W" * 39
+        _, root = self.scene(state)
+        label = self.group(root, "identity").find(NS + "text")
+        self.assertIn(state["subject"]["login"], label.text)
+        self.assertIsNotNone(
+            label.get("textLength"), "Long valid logins must have a bounded text extent"
+        )
+        self.assertLessEqual(float(label.get("textLength")), 620)
+        self.assertEqual(label.get("lengthAdjust"), "spacingAndGlyphs")
+
     def test_invalid_state_and_versions_fail_before_rendering(self):
         for key, value in (
             ("schema_version", 2),
