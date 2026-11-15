@@ -1,6 +1,6 @@
 # Contributing
 
-This repository has a read-only paginated public collector.
+This repository has a read-only paginated public collector and offline persistent-growth engine.
 Start with the [implementation plan](docs/plans/implementation.md) and its linked contracts before adding code.
 
 ## Changes

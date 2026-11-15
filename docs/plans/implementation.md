@@ -1,7 +1,7 @@
 # GitHub Terrarium Implementation Plan
 
-Status: public collection and normalization implemented; growth/state is next.
-Milestone 1 state and future pipeline CLI contracts remain deferred to their implementation milestones.
+Status: collection, normalization, and persistent growth implemented; the visual prototype is next.
+Future build/validate/publish flags remain deferred to their implementation milestones.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
 The initial documentation bootstrap is complete; runtime implementation has started.
@@ -25,7 +25,7 @@ Do not activate the daily publisher until state and concurrency regressions pass
 - [x] Verify public access in an actual GitHub Actions run using its repository `GITHUB_TOKEN`; run 43690047131 passed on `aaa3759`.
 - [x] Prove that separate daily review queries recover a known user's reviews on the same public PR across two UTC days; stop and revise the review source contract if that proof fails or remains unavailable.
 - [x] Establish declared test/format/lint commands and lock any justified dependencies; use the repository-scoped Trunk setup workflow if adopting Trunk.
-- [ ] Create synthetic fixture personas and failure responses under `tests/fixtures/`; keep network access out of the default unit suite.
+- [x] Create synthetic personas under `tests/fixtures/` and failure responses in the unit tests; keep network access out of the default unit suite.
 
 Acceptance: the package installs, its help works, invalid configuration fails clearly, and the live proof identifies the exact supported public collection path.
 Verification to establish: `python -m pip install -e .`, `python -m github_terrarium --help`, and `python -m unittest discover -s tests -v`.
@@ -47,12 +47,12 @@ Traceability: AC-05, AC-06, AC-10, and AC-12.
 
 ## Milestone 3: persistent growth and recovery
 
-- [ ] Implement `growth.py` and `state.py` with versioned schemas, date continuity, size limits, and exact integer scoring.
-- [ ] Implement 30-day bootstrap activity credit, popularity baseline initialization, and bounded trait normalization.
-- [ ] Reconcile daily awards by positive differences, enforce daily rather than per-run caps, and retain per-repository high-water marks across disappearance/reappearance.
-- [ ] Refresh the recent 30-day window, recover missed activity up to 90 days automatically, and provide deliberate multi-batch recovery for larger gaps.
-- [ ] Implement explicit historical recovery without invented popularity history or an accidental implicit reset.
-- [ ] Derive growth stages from awarded XP, preserve user identity across login changes, and reject unsupported versions or changed user IDs.
+- [x] Implement `growth.py` and `state.py` with versioned schemas, date continuity, size limits, and exact integer scoring.
+- [x] Implement 30-day bootstrap activity credit, popularity baseline initialization, and bounded trait normalization.
+- [x] Reconcile daily awards by positive differences, enforce daily rather than per-run caps, and retain per-repository high-water marks across disappearance/reappearance.
+- [x] Refresh the recent 30-day window, recover missed activity up to 90 days automatically, and provide deliberate multi-batch recovery for larger gaps.
+- [x] Implement explicit historical recovery without invented popularity history or an accidental implicit reset.
+- [x] Derive growth stages from awarded XP, preserve user identity across login changes, and reject unsupported versions or changed user IDs.
 
 Acceptance: replay cannot create growth, repeated runs cannot evade caps, and incomplete data never causes a state transition.
 Verification: table-driven cases at every stage/cap boundary; same-day reruns; a star drop/recovery; renamed and newly observed repositories; removed/reappearing repositories; stale-state recovery; null versus empty days; and a 2 MiB overflow fixture.

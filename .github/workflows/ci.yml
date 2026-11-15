@@ -2,7 +2,7 @@ name: Public collection
 
 on:
   push:
-    branches: [main, feat/collection-probe]
+    branches: [main, feat/persistent-growth]
   pull_request:
   workflow_dispatch:
 
