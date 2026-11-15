@@ -1,6 +1,6 @@
 # Contributing
 
-This repository has a read-only collection capability prototype.
+This repository has a read-only paginated public collector.
 Start with the [implementation plan](docs/plans/implementation.md) and its linked contracts before adding code.
 
 ## Changes
@@ -16,7 +16,7 @@ Start with the [implementation plan](docs/plans/implementation.md) and its linke
 Documentation changes require valid relative links, consistent examples, and `git diff --check`.
 Install the package and development tools as described in README.md.
 Run the unit tests, Ruff lint, and Ruff formatting checks before submitting code.
-Tests are offline; the live API probe is a separate, opt-in verification step.
+Tests are offline; live API collection is a separate verification step and also runs on trusted CI pushes.
 Future runtime verification is described in the implementation plan and must not be reported as passing until implemented and run.
 
 ## Commits

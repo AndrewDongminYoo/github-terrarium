@@ -1,4 +1,4 @@
-name: Collection capability
+name: Public collection
 
 on:
   push:
@@ -30,3 +30,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m github_terrarium probe
+      - name: Collect completed public activity with the workflow token
+        if: github.event_name != 'pull_request' && github.repository == 'AndrewDongminYoo/github-terrarium'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m github_terrarium collect --start "$(date -u -d '2 days ago' +%F)" > "$RUNNER_TEMP/snapshot.json"
+          python - "$RUNNER_TEMP/snapshot.json" <<'PY'
+          import json
+          import sys
+          from github_terrarium.models import validate_snapshot
+          with open(sys.argv[1]) as stream:
+              snapshot = validate_snapshot(json.load(stream))
+          print(f"Complete public snapshot: {len(snapshot['repositories'])} repositories, {len(snapshot['days'])} days")
+          PY

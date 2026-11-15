@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; a read-only capability probe exists, while the full pipeline remains planned.
+Status: v1 design; public collection is implemented, while growth, rendering, and publication remain planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -69,12 +69,14 @@ Use a stable SHA-256-derived seed from the subject node ID plus a fixed seed-ver
 
 The implemented diagnostic command is `python -m github_terrarium probe`; it returns first-page sample counts, explicit truncation flags, and `complete_snapshot: false`.
 It does not produce a normalized growth snapshot or write state.
-Planned pipeline commands are `collect`, `build`, `validate`, and `publish` under `python -m github_terrarium`.
-`collect` produces a normalized snapshot in a temporary directory, `build` reads that snapshot and prior state, `validate` inspects the complete bundle, and `publish` requires the expected remote parent SHA.
+The implemented `collect --start DATE [--end DATE] [--expected-subject ID]` command emits a validated snapshot to stdout, with the same configuration/repository flags as `probe`.
+Planned pipeline commands are `build`, `validate`, and `publish` under `python -m github_terrarium`.
+The caller can save `collect` output to a temporary file; `build` reads that snapshot and prior state, `validate` inspects the complete bundle, and `publish` requires the expected remote parent SHA.
 An explicit `--bootstrap` is valid only when the remote output branch does not exist.
 Offline builds require an explicit fixture date and never contact GitHub.
 Routine runs use the current UTC date; historical recovery must not fabricate past popularity snapshots.
-Freeze detailed CLI flags and errors in milestone 1 and update examples with the implemented interface.
+Failures return exit status 1 with sanitized diagnostics; usage errors return 2.
+Future build/publish flags and state schemas remain milestone 3–5 work.
 
 ## Collection and normalization
 
@@ -88,7 +90,7 @@ Query reviews separately for each completed UTC day: the review contribution con
 Page through every connection rather than trusting unfiltered totals.
 Inspect repository visibility on every eligible record; exclude restricted/private records deliberately and fail on unexpected missing required fields.
 Use `occurredAt` for UTC day bucketing, PR/issue node IDs for duplicate removal, and `(subject ID, PR ID, UTC day)` for review units.
-For reviews, select the contribution's `pullRequest`, `pullRequestReview`, and `repository` fields; do not count inline comments as additional reviews.
+For reviews, select the contribution's `pullRequest`, `occurredAt`, and `repository` fields; do not count inline comments as additional reviews.
 Include PR-opening contributions regardless of current draft or merge state; merge bonuses require a later, separate event definition.
 
 Use half-open internal intervals `[start, end)` and explicitly filter returned timestamps, even when the upstream query has inclusive endpoints.
@@ -99,7 +101,8 @@ HTTP success is insufficient: reject GraphQL `errors`, incomplete connections, c
 Use request deadlines, bounded retry with jitter for retryable failures, and rate-limit reset/retry headers.
 Fail after the bounded collection budget rather than publish partial numbers; distinguish authentication, permission, rate limit, transport, and malformed-response errors.
 The first integration spike must test public collection with an actual Actions `GITHUB_TOKEN` against the configured user.
-The daily-review-query assumption is `[UNKNOWN]` until a public PR with reviews by the same user on two different UTC days is checked using the two daily queries.
+Daily review recovery was verified on 2026-11-15 using three days of existing reviews on one public PR; see [the evidence](../notes/collection-verification.md).
+Send UTC midnight at both interval boundaries; a same-day `23:59:59` endpoint failed to recover that day in the live comparison.
 Use existing public events, not artificial reviews, for that read-only check; if the required records are not recoverable, revise the review collector contract before milestone 2 rather than claim complete daily counts.
 An optional read credential may be introduced only if that verified path is insufficient; the public-data filter remains mandatory.
 

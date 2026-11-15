@@ -91,7 +91,7 @@ class ProbeTests(unittest.TestCase):
     def test_query_uses_closed_utc_day(self):
         def client(query, variables):
             self.assertEqual(variables["from"], "2026-11-14T00:00:00Z")
-            self.assertEqual(variables["to"], "2026-11-14T23:59:59Z")
+            self.assertEqual(variables["to"], "2026-11-15T00:00:00Z")
             return response()
 
         probe(Config("octocat", "owner/terrarium"), date(2026, 11, 14), client)

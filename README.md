@@ -3,8 +3,8 @@
 A small living world shaped by your GitHub activity.
 Stars bring flowers and fireflies, forks spread seedlings, pull requests grow plants, reviews enrich a pond, and issues add mushrooms.
 
-**Status: collection capability prototype.**
-A read-only API probe and offline checks are implemented on `feat/collection-probe`.
+**Status: complete public collection implemented.**
+A paginated public collector, read-only API probe, and offline checks are implemented on `feat/collection-probe`.
 The growth engine, artwork, and daily publishing workflow are not implemented yet.
 No generated image or live preview is available at this stage.
 
@@ -37,8 +37,25 @@ ruff format --check src tests
 
 The CI workflow is prepared to run these checks and a read-only workflow-token probe on trusted pushes.
 Hosted tests and public API access with the default workflow token passed in [Actions run 43690047131](https://github.com/AndrewDongminYoo/github-terrarium/actions/runs/43690047131) at `aaa3759`.
-The daily-review recovery assumption remains unverified.
+Daily review recovery was verified against existing public reviews; see [collection evidence](docs/notes/collection-verification.md).
 Regenerate the development lock with `uv pip compile requirements-dev.in --generate-hashes -o requirements-dev.txt` after changing the input.
+
+## Collect daily activity
+
+```bash
+python -m github_terrarium collect --repository AndrewDongminYoo/github-terrarium --start 2026-11-13 --end 2026-11-15 > snapshot.json
+```
+
+`--start` is inclusive, `--end` is exclusive and defaults to today in UTC.
+A run accepts 1–90 completed days and prints a validated JSON snapshot only after every page succeeds.
+Use `--expected-subject NODE_ID` when continuing an existing user's habitat.
+The snapshot contains public repository stock counts and daily PR, issue, and review contribution counts, including empty days.
+These are GitHub-recognized contributions, not an exhaustive record of every GitHub action.
+Reviews count each PR once per UTC day; the generator repository, restricted/private records, and fork repositories' stock counts are excluded.
+Popularity is observed on the actual collection date even when the activity interval is historical.
+The collector allows at most 1,000 HTTP attempts, 100 pages per connection, three attempts per request, and a four-minute collection deadline.
+Rate-limit waits above 30 seconds fail with no snapshot; rerun later.
+Collection does not award growth or publish output.
 
 ## Planned experience
 

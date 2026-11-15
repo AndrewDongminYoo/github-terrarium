@@ -47,7 +47,9 @@ class TransportTests(unittest.TestCase):
                 raise error
 
             with self.assertRaises(GitHubError) as caught:
-                GraphQLClient("test-token", opener=fail)("query", {})
+                GraphQLClient("test-token", opener=fail, sleep=lambda _: None)(
+                    "query", {}
+                )
             self.assertNotIn("secret", str(caught.exception))
 
     def test_fixed_https_endpoint_and_timeout(self):
@@ -63,3 +65,61 @@ class TransportTests(unittest.TestCase):
         for token in ["", "bad\ntoken", "bad token"]:
             with self.assertRaises(GitHubError):
                 GraphQLClient(token)
+
+
+class RetryTests(unittest.TestCase):
+    def test_retryable_errors_then_success(self):
+        for code, headers in [
+            (429, {"Retry-After": "1"}),
+            (503, {}),
+            (403, {"X-RateLimit-Remaining": "0"}),
+        ]:
+            calls = []
+            waits = []
+
+            def opener(*args, **kwargs):
+                calls.append(1)
+                if len(calls) < 3:
+                    raise urllib.error.HTTPError("url", code, "secret", headers, None)
+                return io.BytesIO(b'{"data":{}}')
+
+            self.assertEqual(
+                GraphQLClient("token", opener=opener, sleep=waits.append)("q", {}), {}
+            )
+            self.assertEqual(len(waits), 2)
+
+    def test_auth_long_wait_and_budget_fail_closed(self):
+        for code, headers in [
+            (401, {}),
+            (403, {}),
+            (429, {"Retry-After": "3600"}),
+            (503, {}),
+        ]:
+            calls = []
+
+            def opener(*args, **kwargs):
+                calls.append(1)
+                raise urllib.error.HTTPError("url", code, "secret", headers, None)
+
+            with self.assertRaises(GitHubError):
+                GraphQLClient(
+                    "token", opener=opener, sleep=lambda _: None, max_requests=2
+                )("q", {})
+            self.assertEqual(len(calls), 2 if code == 503 else 1)
+
+    def test_deadline_and_exhaustion(self):
+        client = GraphQLClient(
+            "token", opener=lambda *a, **k: self.fail("Unexpected request")
+        )
+        client.deadline = 0
+        with self.assertRaisesRegex(GitHubError, "deadline"):
+            client("q", {})
+        calls = []
+
+        def fail(*args, **kwargs):
+            calls.append(1)
+            raise TimeoutError("secret")
+
+        with self.assertRaises(GitHubError):
+            GraphQLClient("token", opener=fail, sleep=lambda _: None)("q", {})
+        self.assertEqual(len(calls), 3)

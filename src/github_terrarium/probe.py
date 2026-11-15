@@ -64,7 +64,7 @@ def probe(config, day, client):
             "owner": owner,
             "name": name,
             "from": start.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "to": (end - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "to": end.strftime("%Y-%m-%dT%H:%M:%SZ"),
         },
     )
     try:
