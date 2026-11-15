@@ -15,7 +15,7 @@ Generate a personalized, animated SVG terrarium from public GitHub activity and 
 
 ## Boundaries
 
-- This repository currently contains planning documents only; do not claim a working generator or scheduled workflow.
+- This repository has a complete read-only public collector; do not claim a working terrarium generator or daily scheduled workflow.
 - Keep durable source and documentation on `main`; publish generated images and growth state together on `output` after implementation.
 - Treat incomplete collection as failure, never as zero activity.
 - Keep scoring and rendering deterministic, and prevent repeated runs from earning duplicate growth.
@@ -26,5 +26,5 @@ Generate a personalized, animated SVG terrarium from public GitHub activity and 
 ## Verification
 
 For documentation changes, check relative links, examples, and `git diff --check`.
-Runtime commands in the implementation plan are future acceptance gates, not currently available commands.
-Declare runnable checks with the first implementation and keep this guide short.
+Run `python -m unittest discover -s tests -v`, `ruff check src tests`, and `ruff format --check src tests` in the installed Python 3.12 environment.
+The `probe` and `collect` commands exist; build, validate, and publish remain planned.

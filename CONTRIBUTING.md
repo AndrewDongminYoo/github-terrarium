@@ -1,6 +1,6 @@
 # Contributing
 
-This repository is in the specification stage.
+This repository has a read-only paginated public collector.
 Start with the [implementation plan](docs/plans/implementation.md) and its linked contracts before adding code.
 
 ## Changes
@@ -14,8 +14,9 @@ Start with the [implementation plan](docs/plans/implementation.md) and its linke
 ## Verification
 
 Documentation changes require valid relative links, consistent examples, and `git diff --check`.
-There is no application test suite or continuous integration workflow yet.
-The first implementation milestone must declare installation, test, formatting, and lint commands before relying on them.
+Install the package and development tools as described in README.md.
+Run the unit tests, Ruff lint, and Ruff formatting checks before submitting code.
+Tests are offline; live API collection is a separate verification step and also runs on trusted CI pushes.
 Future runtime verification is described in the implementation plan and must not be reported as passing until implemented and run.
 
 ## Commits

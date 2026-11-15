@@ -1,9 +1,10 @@
 # GitHub Terrarium Implementation Plan
 
-Status: ready for staged implementation; no runtime tasks are complete.
+Status: public collection and normalization implemented; growth/state is next.
+Milestone 1 state and future pipeline CLI contracts remain deferred to their implementation milestones.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
-The current delivery initializes the public repository and these documents only.
+The initial documentation bootstrap is complete; runtime implementation has started.
 
 ## Delivery strategy
 
@@ -18,27 +19,27 @@ Do not activate the daily publisher until state and concurrency regressions pass
 
 ## Milestone 1: executable contracts and collection proof
 
-- [ ] Add `pyproject.toml`, `src/github_terrarium/__main__.py`, `config.py`, `models.py`, and a documented `terrarium.toml` for Python 3.12.
+- [x] Add `pyproject.toml`, `src/github_terrarium/__main__.py`, `config.py`, `models.py`, and a documented `terrarium.toml` for Python 3.12.
 - [ ] Define the snapshot/state types, exact CLI flags, error categories, logical dates, and explicit generator-repository identity input.
-- [ ] Implement a minimal read-only collection spike that resolves the target user and one complete page of each required connection.
-- [ ] Verify public access in an actual GitHub Actions run using its repository `GITHUB_TOKEN`; report capability gaps without recording raw personal payloads.
-- [ ] Prove that separate daily review queries recover a known user's reviews on the same public PR across two UTC days; stop and revise the review source contract if that proof fails or remains unavailable.
-- [ ] Establish declared test/format/lint commands and lock any justified dependencies; use the repository-scoped Trunk setup workflow if adopting Trunk.
+- [x] Implement a minimal read-only collection spike that resolves the target user and one complete page of each required connection.
+- [x] Verify public access in an actual GitHub Actions run using its repository `GITHUB_TOKEN`; run 43690047131 passed on `aaa3759`.
+- [x] Prove that separate daily review queries recover a known user's reviews on the same public PR across two UTC days; stop and revise the review source contract if that proof fails or remains unavailable.
+- [x] Establish declared test/format/lint commands and lock any justified dependencies; use the repository-scoped Trunk setup workflow if adopting Trunk.
 - [ ] Create synthetic fixture personas and failure responses under `tests/fixtures/`; keep network access out of the default unit suite.
 
 Acceptance: the package installs, its help works, invalid configuration fails clearly, and the live proof identifies the exact supported public collection path.
 Verification to establish: `python -m pip install -e .`, `python -m github_terrarium --help`, and `python -m unittest discover -s tests -v`.
-These commands are planned and cannot be run against the documentation-only bootstrap.
+Installation, CLI help, and the unit-test commands above now run; hosted tests and token access passed on `aaa3759`; multi-day review verification passed with existing public data (see [evidence](../notes/collection-verification.md)).
 Record the data-token decision before proceeding; a broader token must remain optional unless the live proof demonstrates a need.
 
 ## Milestone 2: complete collection and normalized snapshots
 
-- [ ] Implement `github.py` and `normalize.py` with cursor pagination, public filtering, generator-repository exclusion, explicit request budgets, and bounded retry.
-- [ ] Normalize PR/issue openings and review units into completed UTC days; enforce half-open interval boundaries and deterministic ordering.
-- [ ] Fetch review contributions per UTC day so the API's latest-review-per-PR behavior cannot collapse multiple days; paginate every daily connection.
-- [ ] Collect repository stock counts using immutable repository IDs, including archived originals and excluding fork repositories.
-- [ ] Collect and mark complete every day in the requested interval, including genuinely empty days; keep popularity observations on their actual observation day.
-- [ ] Fail on partial GraphQL results, incomplete pages, cursor loops, missing required visibility fields, and identity mismatches.
+- [x] Implement `github.py` and `normalize.py` with cursor pagination, public filtering, generator-repository exclusion, explicit request budgets, and bounded retry.
+- [x] Normalize PR/issue openings and review units into completed UTC days; enforce half-open interval boundaries and deterministic ordering.
+- [x] Fetch review contributions per UTC day so the API's latest-review-per-PR behavior cannot collapse multiple days; paginate every daily connection.
+- [x] Collect repository stock counts using immutable repository IDs, including archived originals and excluding fork repositories.
+- [x] Collect and mark complete every day in the requested interval, including genuinely empty days; keep popularity observations on their actual observation day.
+- [x] Fail on partial GraphQL results, incomplete pages, cursor loops, missing required visibility fields, and identity mismatches.
 
 Acceptance: normalized output matches fixtures exactly and contains no private data or unfiltered aggregate contribution totals.
 Verification: tests for multiple pages, UTC midnight, same-PR reviews on different days, duplicate records, restricted nodes, privileged-token visibility, 401/403/429/5xx responses, retry exhaustion, and generator feedback exclusion.
