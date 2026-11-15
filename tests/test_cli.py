@@ -64,6 +64,38 @@ class CLITests(unittest.TestCase):
                 self.assertEqual(output.getvalue(), "")
                 self.assertEqual(prior.read_bytes(), original)
 
+    def test_grow_rejects_invalid_supplied_state_without_bootstrapping(self):
+        from test_growth import snapshot
+
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "snapshot.json"
+            prior = Path(directory) / "state.json"
+            source.write_text(json.dumps(snapshot(prs=1)))
+            for value in (None, False, 0, "", [], {}):
+                with self.subTest(state=value):
+                    prior.write_text(json.dumps(value))
+                    original = prior.read_bytes()
+                    output, error = io.StringIO(), io.StringIO()
+                    with (
+                        contextlib.redirect_stdout(output),
+                        contextlib.redirect_stderr(error),
+                    ):
+                        self.assertEqual(
+                            main(
+                                [
+                                    "grow",
+                                    "--snapshot",
+                                    str(source),
+                                    "--state",
+                                    str(prior),
+                                ]
+                            ),
+                            1,
+                        )
+                    self.assertEqual(output.getvalue(), "")
+                    self.assertIn("error:", error.getvalue())
+                    self.assertEqual(prior.read_bytes(), original)
+
     def test_unrepresentable_bootstrap_window_fails_cleanly(self):
         from datetime import date
 

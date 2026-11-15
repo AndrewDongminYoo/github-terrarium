@@ -12,7 +12,7 @@ from .growth import advance
 from .models import canonical_json
 from .normalize import collect
 from .probe import probe
-from .state import read_json
+from .state import read_json, validate_state
 
 
 def main(argv=None):
@@ -53,7 +53,11 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == "grow":
-            previous = read_json(args.state) if args.state else None
+            previous = (
+                validate_state(read_json(args.state))
+                if args.state is not None
+                else None
+            )
             result = advance(
                 read_json(args.snapshot), previous, recover_through=args.recover_through
             )
