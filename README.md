@@ -3,10 +3,10 @@
 A small living world shaped by your GitHub activity.
 Stars bring flowers and fireflies, forks spread seedlings, pull requests grow plants, reviews enrich a pond, and issues add mushrooms.
 
-**Status: public collection and persistent growth implemented.**
+**Status: public collection, persistent growth, and static SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-Artwork and the daily publishing workflow are not implemented yet.
-No generated image or live preview is available at this stage.
+The original static renderer is available as a Python API; animation, the full browser gallery, bundle validation, and publication remain planned.
+No published image or daily workflow is available at this stage.
 
 ## Run the collection probe
 
@@ -89,6 +89,27 @@ The same explicit mode can apply deliberate older corrections within a snapshot 
 State files are UTF-8 JSON, limited to 2 MiB, and reject duplicate keys, unsupported versions, missing dates, invalid counts, and inconsistent derived activity totals.
 The five synthetic fixtures cover empty, popularity-heavy, PR-heavy, review-heavy, and issue-heavy histories.
 See [growth verification](docs/notes/growth-verification.md) for the checked invariants and local review results.
+
+## Render a static habitat
+
+The `render(state)` Python API accepts a validated growth state and returns deterministic UTF-8 SVG bytes.
+It reuses the existing stages and normalized traits, with stable subject-ID-based anchors and bounded object slots.
+No rendering CLI, animation, bundle validator, or publication is included yet.
+
+```bash
+python - <<'PYTHON'
+from pathlib import Path
+from github_terrarium.growth import advance
+from github_terrarium.render import render
+from github_terrarium.state import read_json
+
+state = advance(read_json("tests/fixtures/pull-requests.json"))
+Path("terrarium-preview.svg").write_bytes(render(state))
+PYTHON
+```
+
+The scene uses original packaged [SVG primitives](assets/terrarium/botanical.svg); their [provenance](assets/terrarium/README.md) is recorded with the source.
+The first static renderer does not establish browser compatibility or approval of the botanical direction; those remain gallery and operator-review gates.
 
 ## Planned experience
 
