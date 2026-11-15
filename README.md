@@ -16,7 +16,8 @@ The package has no third-party runtime dependencies; Ruff is a pinned developmen
 ```bash
 python -m venv .venv
 . .venv/bin/activate
-python -m pip install -e . -r requirements-dev.txt
+python -m pip install --require-hashes -r requirements-dev.txt
+python -m pip install -e .
 python -m github_terrarium probe --repository AndrewDongminYoo/github-terrarium
 ```
 
