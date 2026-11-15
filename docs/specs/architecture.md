@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection is implemented, while growth, rendering, and publication remain planned.
+Status: v1 design; public collection and persistent growth are implemented, while rendering and publication remain planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -72,11 +72,13 @@ It does not produce a normalized growth snapshot or write state.
 The implemented `collect --start DATE [--end DATE] [--expected-subject ID]` command emits a validated snapshot to stdout, with the same configuration/repository flags as `probe`.
 Planned pipeline commands are `build`, `validate`, and `publish` under `python -m github_terrarium`.
 The caller can save `collect` output to a temporary file; `build` reads that snapshot and prior state, `validate` inspects the complete bundle, and `publish` requires the expected remote parent SHA.
-An explicit `--bootstrap` is valid only when the remote output branch does not exist.
+The local `grow --bootstrap` command requires exactly 30 completed days and no supplied prior state.
+The future publisher must additionally prove the remote output branch does not exist before bootstrap publication.
 Offline builds require an explicit fixture date and never contact GitHub.
 Routine runs use the current UTC date; historical recovery must not fabricate past popularity snapshots.
 Failures return exit status 1 with sanitized diagnostics; usage errors return 2.
-Future build/publish flags and state schemas remain milestone 3–5 work.
+The offline `grow --snapshot FILE` command requires either `--state FILE` or `--bootstrap`, accepts optional `--recover-through DATE`, and prints a validated candidate state.
+Future build/publish flags remain milestone 4–5 work.
 
 ## Collection and normalization
 
@@ -84,6 +86,7 @@ Resolve `user(login)` to an immutable node ID and reject a mismatch with existin
 Enumerate all owned public, non-fork repositories with cursor pagination, including archived originals and excluding the generator repository by immutable repository ID.
 Read `stargazerCount` and `forkCount` for the eligible set.
 Use stable node IDs for watermarks so repository renames do not create new credit.
+Repository names are not stored as watermark keys; unseen IDs establish a baseline rather than importing their existing stars as growth.
 
 Query PR-opening and issue-opening contribution collections in bounded windows of at most 30 days.
 Query reviews separately for each completed UTC day: the review contribution connection returns the most recent review per PR, so a multi-day query cannot establish all daily review units.
@@ -115,6 +118,7 @@ The SVG freshness label names the last complete activity date; the manifest also
 
 Bootstrap reads 30 completed activity days and establishes all current repository watermarks.
 For subsequent runs, collect the earlier of `D - 30 days` and the day after the previous complete activity day, through `D` exclusive.
+Normal snapshots must match this exact interval; older corrections require explicit recovery.
 This refreshes the 30-day window and recovers missed activity without counting events twice.
 Recompute recent daily counts, then award only the positive difference from the day's already awarded activity XP.
 If a day's corrected count falls, retain awarded XP while updating recent-trait counts to the observed value.
@@ -122,7 +126,9 @@ Corrections outside the refreshed window are not automatically recovered; histor
 
 Bound an automatic recovery to 90 activity days in a run, split into PR/issue query windows of at most 30 days and individual UTC-day review queries.
 A larger gap fails with a recovery instruction and preserves the prior bundle.
-Implement deliberate recovery as sequential, validated batches against a fixed final cutoff; historical batches do not update popularity.
+Deliberate recovery uses sequential, validated batches against a fixed final cutoff; historical batches do not update popularity.
+`grow --recover-through DATE` records the cutoff until it is reached; repeated batches are idempotent and changing an unfinished cutoff fails.
+After recovery finishes, a fresh normal collection updates stock traits and credits net popularity changes on the actual observation date.
 For a gap in popularity observations, only net increases above the last high-water marks are known; credit those on the actual observation day and do not invent a daily distribution.
 
 ## Persistent state contract
@@ -140,6 +146,7 @@ Do not accept unknown future schema or scoring versions without an explicit migr
 | `days` | Date-keyed daily counts, accumulated observed popularity units, and awarded XP |
 | `repository_watermarks` | Per-public-repository node ID, maximum observed stars and forks |
 | `current_traits` | Current eligible stock totals and recomputed 30-day activity totals |
+| `recovery_target` | Exclusive fixed recovery cutoff while batches remain, otherwise `null`; normal updates are blocked while set |
 
 Each daily record contains `prs`, `reviews`, `issues`, `new_star_units`, `new_fork_units`, `activity_xp_awarded`, and `popularity_xp_awarded`.
 An omitted activity record is unknown; an explicitly recorded zero day is known empty.

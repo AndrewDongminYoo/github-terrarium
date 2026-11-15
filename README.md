@@ -3,9 +3,9 @@
 A small living world shaped by your GitHub activity.
 Stars bring flowers and fireflies, forks spread seedlings, pull requests grow plants, reviews enrich a pond, and issues add mushrooms.
 
-**Status: complete public collection implemented.**
-A paginated public collector, read-only API probe, and offline checks are implemented on `feat/collection-probe`.
-The growth engine, artwork, and daily publishing workflow are not implemented yet.
+**Status: public collection and persistent growth implemented.**
+A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
+Artwork and the daily publishing workflow are not implemented yet.
 No generated image or live preview is available at this stage.
 
 ## Run the collection probe
@@ -56,6 +56,39 @@ Popularity is observed on the actual collection date even when the activity inte
 The collector allows at most 1,000 HTTP attempts, 100 pages per connection, three attempts per request, and a four-minute collection deadline.
 Rate-limit waits above 30 seconds fail with no snapshot; rerun later.
 Collection does not award growth or publish output.
+
+## Reconcile local growth
+
+The `grow` command is offline and prints a validated candidate state; it does not publish files or contact GitHub.
+Bootstrap requires exactly 30 completed days ending on the snapshot's actual observation date.
+
+```bash
+python -m github_terrarium grow --snapshot tests/fixtures/pull-requests.json --bootstrap > state.json
+python -m github_terrarium grow --snapshot tests/fixtures/pull-requests.json --state state.json > next-state.json
+cmp state.json next-state.json
+```
+
+Use a separate destination from the input state so shell redirection cannot truncate the prior state.
+Once publication exists, bootstrap will additionally require an absent remote output branch; this local command alone does not authorize a remote reset.
+For normal updates, collect from the earlier of today minus 30 days and the day after `last_complete_activity_day`, ending at today's UTC date exclusively.
+The snapshot must cover exactly that interval, with no unknown days; an interval over 90 days requires explicit recovery.
+
+Daily awards never decrease and reruns award only positive differences within the same daily caps.
+Repository watermarks use immutable GitHub node IDs, not repository names: renames and disappearance/reappearance cannot copy star credit.
+An unseen repository ID establishes its current baseline without an initial popularity award.
+User login changes retain the same habitat identity; a different user ID fails.
+
+For a longer gap, choose one fixed completed cutoff and collect contiguous batches of at most 90 days.
+Start the first batch on the day after `last_complete_activity_day`; each next batch starts at the prior batch's exclusive end.
+Pass `--recover-through YYYY-MM-DD` with that same cutoff to every `grow --state` call.
+Persist each validated candidate separately before proceeding to the next batch.
+Recovery retains existing popularity watermarks and observations without awarding historical popularity or using the batch's stock counts.
+An unfinished recovery records its cutoff and blocks normal updates; after the final batch, perform a normal fresh collection to update popularity on its actual observation date.
+The same explicit mode can apply deliberate older corrections within a snapshot of at most 90 days; do not include activity before this habitat's bootstrap.
+
+State files are UTF-8 JSON, limited to 2 MiB, and reject duplicate keys, unsupported versions, missing dates, invalid counts, and inconsistent derived activity totals.
+The five synthetic fixtures cover empty, popularity-heavy, PR-heavy, review-heavy, and issue-heavy histories.
+See [growth verification](docs/notes/growth-verification.md) for the checked invariants and local review results.
 
 ## Planned experience
 

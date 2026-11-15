@@ -8,9 +8,11 @@ from pathlib import Path
 
 from .config import load_config
 from .github import GraphQLClient
+from .growth import advance
 from .models import canonical_json
 from .normalize import collect
 from .probe import probe
+from .state import read_json, validate_state
 
 
 def main(argv=None):
@@ -40,8 +42,27 @@ def main(argv=None):
     command.add_argument(
         "--expected-subject", help="Reject a different immutable user ID"
     )
+    command = commands.add_parser(
+        "grow", help="Reconcile local growth state without network access"
+    )
+    command.add_argument("--snapshot", type=Path, required=True)
+    source = command.add_mutually_exclusive_group(required=True)
+    source.add_argument("--state", type=Path)
+    source.add_argument("--bootstrap", action="store_true")
+    command.add_argument("--recover-through", type=date.fromisoformat)
     args = parser.parse_args(argv)
     try:
+        if args.command == "grow":
+            previous = (
+                validate_state(read_json(args.state))
+                if args.state is not None
+                else None
+            )
+            result = advance(
+                read_json(args.snapshot), previous, recover_through=args.recover_through
+            )
+            print(canonical_json(result), end="")
+            return 0
         if args.command == "probe" and args.day >= datetime.now(UTC).date():
             raise ValueError("Probe day must be a completed UTC day")
         config = load_config(args.config, args.repository)
