@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection, persistent growth, and static rendering are implemented; motion, bundle validation, and publication remain planned.
+Status: v1 design; public collection, persistent growth, and ambient SVG rendering are implemented; bundle validation and publication remain planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -165,10 +165,14 @@ Validate the subject, date continuity, nonnegative integer counts, null-day rule
 
 ## Rendering contract
 
-`github_terrarium.render.render(state)` implements the static scene and returns UTF-8 SVG bytes after existing state validation.
-Renderer version 1 uses the original primitives in `assets/terrarium/botanical.svg`, packaged as `github_terrarium.art` so installed wheels do not require a source checkout.
+`github_terrarium.render.render(state)` implements the scene with embedded ambient CSS and returns UTF-8 SVG bytes after existing state validation.
+Renderer version 2 uses the original primitives in `assets/terrarium/botanical.svg`, packaged as `github_terrarium.art` so installed wheels do not require a source checkout.
 Fixed feature salts and named anchors isolate trait changes; exact slot limits are declared in `render.py`.
-The static renderer adds no CLI command; animation, independent SVG validation, browser-gallery evidence, and final visual approval remain follow-up work.
+The renderer adds no CLI command; independent SVG validation, full browser-gallery evidence, and final visual approval remain follow-up work.
+Motion uses separate nested groups so disabling CSS animation preserves each outer placement transform.
+The last seven completed UTC activity days select active or calm keyframes; stock counts do not select the mode, and neither mode changes state or geometry.
+Main leaves, fireflies, and ripple slots total at most 38 independently animated groups; phases are derived from independent subject-ID salts.
+Reduced-motion CSS removes all ambient animations and transitions, retaining the complete base pose.
 
 Render SVG primitives, groups, paths, gradients, clip paths, and internal reusable symbols.
 Use native SVG for v1 rather than `foreignObject`; do not include scripts, remote fonts, external images, event handlers, or embedded HTML.

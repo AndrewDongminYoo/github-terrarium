@@ -68,7 +68,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("2026-11-14", label)
         self.assertNotIn("2026-11-15", label)
         self.assertEqual(state, before)
-        self.assertNotIn(b"animation", raw)
+        self.assertIsNotNone(root.find(NS + "style"))
 
     def test_personas_are_distinct_and_bounded_self_contained_svg(self):
         outputs = set()
