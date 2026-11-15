@@ -3,9 +3,9 @@
 A small living world shaped by your GitHub activity.
 Stars bring flowers and fireflies, forks spread seedlings, pull requests grow plants, reviews enrich a pond, and issues add mushrooms.
 
-**Status: public collection, persistent growth, and static SVG rendering implemented.**
+**Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The original static renderer is available as a Python API; animation, the full browser gallery, bundle validation, and publication remain planned.
+The original SVG renderer and bounded ambient motion are available as a Python API; the full browser gallery, bundle validation, and publication remain planned.
 No published image or daily workflow is available at this stage.
 
 ## Run the collection probe
@@ -90,11 +90,13 @@ State files are UTF-8 JSON, limited to 2 MiB, and reject duplicate keys, unsuppo
 The five synthetic fixtures cover empty, popularity-heavy, PR-heavy, review-heavy, and issue-heavy histories.
 See [growth verification](docs/notes/growth-verification.md) for the checked invariants and local review results.
 
-## Render a static habitat
+## Render a habitat
 
 The `render(state)` Python API accepts a validated growth state and returns deterministic UTF-8 SVG bytes.
 It reuses the existing stages and normalized traits, with stable subject-ID-based anchors and bounded object slots.
-No rendering CLI, animation, bundle validator, or publication is included yet.
+Embedded CSS adds leaf sway, firefly travel, and pond ripples; after seven completed UTC days with no eligible PR, review, or issue activity, motion becomes calmer without changing earned growth or geometry.
+Reduced motion disables every ambient animation and transition, and disabled CSS leaves the complete static scene visible.
+No rendering CLI, bundle validator, or publication is included yet.
 
 ```bash
 python - <<'PYTHON'
@@ -109,7 +111,8 @@ PYTHON
 ```
 
 The scene uses original packaged [SVG primitives](assets/terrarium/botanical.svg); their [provenance](assets/terrarium/README.md) is recorded with the source.
-The first static renderer does not establish browser compatibility or approval of the botanical direction; those remain gallery and operator-review gates.
+The renderer alone does not establish full browser compatibility or approval of the botanical direction; those remain gallery and operator-review gates.
+See [motion verification](docs/notes/motion-verification.md) for the tested fallback behavior and reduced-motion browser setup.
 
 ## Planned experience
 

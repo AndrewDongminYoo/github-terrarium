@@ -1,6 +1,6 @@
 # Contributing
 
-This repository has a read-only paginated public collector, an offline persistent-growth engine, and a static SVG rendering API.
+This repository has a read-only paginated public collector, an offline persistent-growth engine, and an SVG rendering API with bounded ambient motion.
 Start with the [implementation plan](docs/plans/implementation.md) and its linked contracts before adding code.
 
 ## Changes

@@ -1,15 +1,17 @@
-"""Static botanical SVG from validated growth state; no clock or network reads."""
+"""Botanical SVG with bounded ambient motion; no clock or network reads."""
 
 import copy
 import hashlib
 import math
 import xml.etree.ElementTree as ET
+from datetime import timedelta
 from importlib.resources import files
 
 from .growth import stage, traits
+from .models import iso_day
 from .state import validate_state
 
-RENDERER_VERSION = 1
+RENDERER_VERSION = 2
 # Maximum optional objects, independent of unbounded activity/stock counts.
 SLOTS = {
     "branches": 6,
@@ -30,6 +32,50 @@ STAGES = {
     "sanctuary": (174, 16),
 }
 ANCHORS = {"plant": (430, 254), "pond": (620, 267)}
+
+
+MOTION_CSS = """
+.ambient { transform-box: fill-box; transform-origin: center; }
+.leaf-sway {
+  transform-origin: left bottom; animation: leaf-sway 7s ease-in-out infinite;
+}
+.firefly-travel { animation: firefly-travel 11s ease-in-out infinite; }
+.pond-ripple { animation: pond-ripple 8s ease-in-out infinite; }
+[data-motion="calm"] .leaf-sway { animation-name: leaf-calm; animation-duration: 17s; }
+[data-motion="calm"] .firefly-travel {
+  animation-name: firefly-calm; animation-duration: 23s;
+}
+[data-motion="calm"] .pond-ripple {
+  animation-name: ripple-calm; animation-duration: 19s;
+}
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(3deg); }
+}
+@keyframes firefly-travel {
+  0%, 100% { transform: translate(-3px, 2px); opacity: 0.65; }
+  50% { transform: translate(4px, -6px); opacity: 1; }
+}
+@keyframes pond-ripple {
+  0%, 100% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+@keyframes leaf-calm {
+  0%, 100% { transform: rotate(-0.5deg); }
+  50% { transform: rotate(0.75deg); }
+}
+@keyframes firefly-calm {
+  0%, 100% { transform: translate(-1px, 0.5px); opacity: 0.8; }
+  50% { transform: translate(1px, -1.5px); opacity: 1; }
+}
+@keyframes ripple-calm {
+  0%, 100% { transform: scale(0.98); opacity: 0.8; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient, .ambient * { animation: none !important; transition: none !important; }
+}
+""".strip()
 
 
 def _node(parent, tag, **attributes):
@@ -64,11 +110,29 @@ def _use(parent, name, x, y, width, height):
     return _node(parent, "use", href=f"#{name}", x=x, y=y, width=width, height=height)
 
 
+def _motion(parent, subject, family, index):
+    # CSS transforms act on a child, preserving the parent's placement in all modes.
+    delay = 12 * _variation(subject, "motion-" + family, index)
+    return _node(
+        parent, "g", class_=f"ambient {family}", style=f"animation-delay:-{delay:.2f}s"
+    )
+
+
+def _motion_mode(state):
+    last = iso_day(state["last_complete_activity_day"])
+    active = any(
+        state["days"][(last - timedelta(days=offset)).isoformat()][metric]
+        for offset in range(7)
+        for metric in ("prs", "reviews", "issues")
+    )
+    return "active" if active else "calm"
+
+
 def render(state):
     """Return canonical UTF-8 SVG bytes without mutating the validated state.
 
-    State already carries logical dates and identity. Renderer version 1 has no
-    animation: the static geometry is also the fallback for later motion work.
+    Logical dates select active or calm ambient motion. Static base geometry
+    remains complete with disabled CSS or prefers-reduced-motion: reduce.
     """
     validate_state(state)
     subject = state["subject"]
@@ -87,6 +151,7 @@ def render(state):
             "aria-labelledby": "scene-title scene-desc",
             "data-stage": growth_stage,
             "data-renderer-version": str(RENDERER_VERSION),
+            "data-motion": _motion_mode(state),
         },
     )
     _node(
@@ -98,6 +163,7 @@ def render(state):
         "Stars bring flowers and fireflies; forks add branches and seedlings; "
         "pull requests add leaves; reviews enrich the pond; issues add mushrooms."
     )
+    _node(root, "style").text = MOTION_CSS
     asset = ET.fromstring(
         files("github_terrarium.art").joinpath("botanical.svg").read_bytes()
     )
@@ -201,7 +267,7 @@ def render(state):
                 + f" scale({side} 1) rotate(-18)"
             ),
         )
-        _use(leaf, "leaf", 0, -16, 35, 18)
+        _use(_motion(leaf, subject, "leaf-sway", index), "leaf", 0, -16, 35, 18)
     branches = _node(
         root, "g", id="branches", transform="translate(%s %s)" % ANCHORS["plant"]
     )
@@ -249,7 +315,14 @@ def render(state):
                 subject, "ripple", index, -56 + index * 21, -1 + index % 2 * 5
             ),
         )
-        _node(ripple, "ellipse", rx=8, ry=2, fill="none", stroke="#d0dfbc")
+        _node(
+            _motion(ripple, subject, "pond-ripple", index),
+            "ellipse",
+            rx=8,
+            ry=2,
+            fill="none",
+            stroke="#d0dfbc",
+        )
     for index in range(_slots(normalized["reviews"], "creatures")):
         creature = _node(
             pond,
@@ -320,8 +393,9 @@ def render(state):
                 subject, "firefly", index, 232 + index * 61, 116 + index % 3 * 29
             ),
         )
-        _node(item, "circle", r=6, fill="#e8ca76", opacity="0.18")
-        _node(item, "circle", r=2, fill="#c9a74c")
+        motion = _motion(item, subject, "firefly-travel", index)
+        _node(motion, "circle", r=6, fill="#e8ca76", opacity="0.18")
+        _node(motion, "circle", r=2, fill="#c9a74c")
     identity = _node(root, "g", id="identity", fill="#3c5146", font_family="serif")
     label = _node(identity, "text", x=32, y=29, font_size=25)
     label.text = f"{subject['login']} / terrarium"
