@@ -1,9 +1,9 @@
 # GitHub Terrarium Implementation Plan
 
-Status: ready for staged implementation; no runtime tasks are complete.
+Status: milestone 1 in progress; read-only probe and offline checks implemented, hosted-token and multi-day review proof pending.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
-The current delivery initializes the public repository and these documents only.
+The initial documentation bootstrap is complete; runtime implementation has started.
 
 ## Delivery strategy
 
@@ -28,7 +28,7 @@ Do not activate the daily publisher until state and concurrency regressions pass
 
 Acceptance: the package installs, its help works, invalid configuration fails clearly, and the live proof identifies the exact supported public collection path.
 Verification to establish: `python -m pip install -e .`, `python -m github_terrarium --help`, and `python -m unittest discover -s tests -v`.
-These commands are planned and cannot be run against the documentation-only bootstrap.
+Installation, CLI help, and the unit-test commands above now run; hosted verification is still pending.
 Record the data-token decision before proceeding; a broader token must remain optional unless the live proof demonstrates a need.
 
 ## Milestone 2: complete collection and normalized snapshots

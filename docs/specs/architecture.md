@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: proposed v1 design; no runtime exists yet.
+Status: v1 design; a read-only capability probe exists, while the full pipeline remains planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -67,7 +67,9 @@ Require an explicit repository identity for local live collection and never infe
 Version scoring constants and visual defaults in source rather than exposing arbitrary formulas in configuration.
 Use a stable SHA-256-derived seed from the subject node ID plus a fixed seed-version string; do not use Python's randomized `hash()`.
 
-Planned commands are `collect`, `build`, `validate`, and `publish` under `python -m github_terrarium`.
+The implemented diagnostic command is `python -m github_terrarium probe`; it returns first-page sample counts, explicit truncation flags, and `complete_snapshot: false`.
+It does not produce a normalized growth snapshot or write state.
+Planned pipeline commands are `collect`, `build`, `validate`, and `publish` under `python -m github_terrarium`.
 `collect` produces a normalized snapshot in a temporary directory, `build` reads that snapshot and prior state, `validate` inspects the complete bundle, and `publish` requires the expected remote parent SHA.
 An explicit `--bootstrap` is valid only when the remote output branch does not exist.
 Offline builds require an explicit fixture date and never contact GitHub.

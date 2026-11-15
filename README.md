@@ -3,9 +3,40 @@
 A small living world shaped by your GitHub activity.
 Stars bring flowers and fireflies, forks spread seedlings, pull requests grow plants, reviews enrich a pond, and issues add mushrooms.
 
-**Status: specification and planning.**
-The generator, artwork, and GitHub Actions workflows are not implemented yet.
+**Status: collection capability prototype.**
+A read-only API probe and offline checks are implemented locally.
+The growth engine, artwork, and daily publishing workflow are not implemented yet.
 No generated image or live preview is available at this stage.
+
+## Run the collection probe
+
+Use Python 3.12 or later.
+The package has no third-party runtime dependencies; Ruff is a pinned development-only checker.
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -e . -r requirements-dev.txt
+python -m github_terrarium probe --repository AndrewDongminYoo/github-terrarium
+```
+
+Set `GH_TOKEN` or `GITHUB_TOKEN` in the environment; never put it in configuration or command arguments.
+`terrarium.toml` contains the target login.
+The repository argument may instead come from `GITHUB_REPOSITORY` in Actions.
+`--day YYYY-MM-DD` selects a completed UTC day; the default is yesterday in UTC.
+The probe reads at most one page of each connection and explicitly reports truncation.
+Its sample counts are not complete statistics and must not be used for scoring.
+It writes no growth state and never updates a remote branch.
+
+```bash
+python -m unittest discover -s tests -v
+ruff check src tests
+ruff format --check src tests
+```
+
+The CI workflow is prepared to run these checks and a read-only workflow-token probe on trusted pushes.
+Its hosted execution and the daily-review recovery assumption remain unverified.
+Regenerate the development lock with `uv pip compile requirements-dev.in --generate-hashes -o requirements-dev.txt` after changing the input.
 
 ## Planned experience
 
