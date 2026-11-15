@@ -1,6 +1,6 @@
 # GitHub Terrarium Implementation Plan
 
-Status: milestone 1 in progress; read-only probe and offline checks implemented, hosted-token and multi-day review proof pending.
+Status: milestone 1 in progress; read-only probe and offline checks implemented, hosted-token access verified, multi-day review proof pending.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
 The initial documentation bootstrap is complete; runtime implementation has started.
@@ -21,14 +21,14 @@ Do not activate the daily publisher until state and concurrency regressions pass
 - [ ] Add `pyproject.toml`, `src/github_terrarium/__main__.py`, `config.py`, `models.py`, and a documented `terrarium.toml` for Python 3.12.
 - [ ] Define the snapshot/state types, exact CLI flags, error categories, logical dates, and explicit generator-repository identity input.
 - [ ] Implement a minimal read-only collection spike that resolves the target user and one complete page of each required connection.
-- [ ] Verify public access in an actual GitHub Actions run using its repository `GITHUB_TOKEN`; report capability gaps without recording raw personal payloads.
+- [x] Verify public access in an actual GitHub Actions run using its repository `GITHUB_TOKEN`; run 43690047131 passed on `aaa3759`.
 - [ ] Prove that separate daily review queries recover a known user's reviews on the same public PR across two UTC days; stop and revise the review source contract if that proof fails or remains unavailable.
 - [ ] Establish declared test/format/lint commands and lock any justified dependencies; use the repository-scoped Trunk setup workflow if adopting Trunk.
 - [ ] Create synthetic fixture personas and failure responses under `tests/fixtures/`; keep network access out of the default unit suite.
 
 Acceptance: the package installs, its help works, invalid configuration fails clearly, and the live proof identifies the exact supported public collection path.
 Verification to establish: `python -m pip install -e .`, `python -m github_terrarium --help`, and `python -m unittest discover -s tests -v`.
-Installation, CLI help, and the unit-test commands above now run; hosted verification is still pending.
+Installation, CLI help, and the unit-test commands above now run; hosted tests and token access passed on `aaa3759`; multi-day review verification remains pending.
 Record the data-token decision before proceeding; a broader token must remain optional unless the live proof demonstrates a need.
 
 ## Milestone 2: complete collection and normalized snapshots

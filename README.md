@@ -4,7 +4,7 @@ A small living world shaped by your GitHub activity.
 Stars bring flowers and fireflies, forks spread seedlings, pull requests grow plants, reviews enrich a pond, and issues add mushrooms.
 
 **Status: collection capability prototype.**
-A read-only API probe and offline checks are implemented locally.
+A read-only API probe and offline checks are implemented on `feat/collection-probe`.
 The growth engine, artwork, and daily publishing workflow are not implemented yet.
 No generated image or live preview is available at this stage.
 
@@ -36,7 +36,8 @@ ruff format --check src tests
 ```
 
 The CI workflow is prepared to run these checks and a read-only workflow-token probe on trusted pushes.
-Its hosted execution and the daily-review recovery assumption remain unverified.
+Hosted tests and public API access with the default workflow token passed in [Actions run 43690047131](https://github.com/AndrewDongminYoo/github-terrarium/actions/runs/43690047131) at `aaa3759`.
+The daily-review recovery assumption remains unverified.
 Regenerate the development lock with `uv pip compile requirements-dev.in --generate-hashes -o requirements-dev.txt` after changing the input.
 
 ## Planned experience
