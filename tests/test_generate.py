@@ -362,6 +362,22 @@ class GenerateTests(Remote, unittest.TestCase):
         self.assertEqual(collector.calls, [])
         self.assert_valid_remote(first)
 
+    def test_collection_crossing_utc_midnight_publishes_nothing(self):
+        first = self.bootstrap()
+        days = iter([DAY + timedelta(days=1), DAY + timedelta(days=2)])
+        collector = Collector(stars=(15,))
+        with self.assertRaisesRegex(ValueError, "UTC date changed during collection"):
+            generator.generate(
+                CONFIG,
+                REPO,
+                COMMIT,
+                remote=self.url,
+                clock=lambda: next(days),
+                collector=collector,
+            )
+        self.assertEqual(len(collector.calls), 1)
+        self.assert_valid_remote(first["commit"])
+
     def test_output_newer_than_clock_fails_before_collection(self):
         first = self.bootstrap()["commit"]
         collector = Collector()

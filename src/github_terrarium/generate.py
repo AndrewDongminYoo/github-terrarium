@@ -4,7 +4,10 @@ Each attempt reads the remote output head and its validated bundle first, then
 collects the interval that state requires, reconciles growth, builds and
 validates the bundle, and publishes it over the head that was read. A conflict
 discards that attempt's snapshot and candidate; the single retry starts over
-from a fresh read and a fresh collection, even on the same UTC day.
+from a fresh read and a fresh collection, even on the same UTC day. A bootstrap
+retry that finds a branch created by another publisher fails with the
+existing-branch error before it collects, and does not adopt or update that
+habitat.
 """
 
 import json
@@ -87,6 +90,12 @@ def _attempt(config, repo, commit, *, bootstrap, remote, token, clock, collector
         observed_on=day,
         expected_subject=None if previous is None else previous["subject"]["id"],
     )
+    # Stock read after UTC midnight belongs to the next day; never file it
+    # under the day the collection started.
+    if clock() != day:
+        raise ValueError(
+            "UTC date changed during collection; nothing was published, rerun"
+        )
     state = advance(snapshot, previous)
     files = build_files(state, commit)
     with tempfile.TemporaryDirectory(prefix="terrarium-generate-") as directory:
