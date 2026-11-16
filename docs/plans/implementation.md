@@ -1,6 +1,6 @@
 # GitHub Terrarium Implementation Plan
 
-Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, offline output-bundle build/validation, and single-attempt output publication implemented; the reviewed browser gallery and conflict recollection are next.
+Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, offline output-bundle build/validation, output publication, and `generate` orchestration with one conflict recollection implemented; the fixture gallery visual direction was approved on 2026-11-16, and the Actions workflows are next.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
 The initial documentation bootstrap is complete; runtime implementation has started.
@@ -69,7 +69,7 @@ Traceability: AC-02, AC-03, AC-04, AC-06, and AC-12.
 Acceptance: all five metrics create understandable differences, every stage is complete, and reduced motion retains the same scene.
 Verification: XML/security-negative fixtures, byte-identical rendering from fixed inputs, 360/768/900-pixel captures, normal/reduced-motion captures, and time-separated frames proving motion through `img`.
 Run Chromium and WebKit checks where available; explicitly record any untested browser rather than claiming universal compatibility.
-Visual gate: review the fixture gallery with the operator before expanding artwork or treating the direction as approved.
+Visual gate: the fixture gallery visual direction was reviewed and approved on 2026-11-16; artwork expansion may build on it.
 Traceability: AC-01, AC-07, AC-08, and AC-09.
 
 ## Milestone 5: safe output-branch publication
@@ -77,7 +77,7 @@ Traceability: AC-01, AC-07, AC-08, and AC-09.
 - [x] Implement `publish.py` using an isolated temporary Git directory or Git plumbing, without changing the source checkout's branch or staging unrelated files.
 - [x] Read the expected remote output parent, distinguish absent branch from missing state, and prepare all three generated files with canonical serialization and a hash manifest.
 - [x] Create one commit per changed bundle, skip byte-identical output, and preserve unrelated paths on an existing output branch.
-- [ ] Push without force; on a changed remote head, fetch, discard the old snapshot, recollect, rebuild from the new state, and retry once, including same-day conflicts.
+- [x] Push without force; on a changed remote head, fetch, discard the old snapshot, recollect, rebuild from the new state, and retry once, including same-day conflicts.
 - [x] Read back the published commit and hashes before reporting success.
 
 Acceptance: a remote reader sees either the prior complete bundle or the new complete bundle, and source files never enter `output` accidentally.
