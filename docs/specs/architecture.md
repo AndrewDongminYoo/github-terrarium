@@ -170,7 +170,7 @@ Renderer version 3 assembles the container-free paper-cut pieces in `assets/terr
 The authoring-time extractor derives named vector pieces from the unchanged reference; runtime code loads only the packaged definitions, supplies live identity/date labels, and selects geometry from state.
 Five permanent stage scales expand the tree and roots independently of recent activity; PRs add canopy pieces, forks add branches and seedlings, stars add flowers/fireflies, reviews enrich the pond, and issues add mushrooms/ground cover.
 Fixed feature salts and named anchors isolate trait changes; exact slot limits are declared in `render.py`.
-The renderer adds no CLI command; independent SVG validation, full browser-gallery evidence, and final visual approval remain follow-up work.
+The renderer adds no CLI command; the full browser gallery and its final visual approval remain follow-up work.
 Motion uses separate nested groups so disabling CSS animation preserves each outer placement transform.
 The last seven completed UTC activity days select active or calm keyframes; stock counts do not select the mode, and neither mode changes state or geometry.
 Main and additional canopy pieces, fireflies, and ripple slots total at most 33 independently animated groups; phases are derived from independent subject-ID salts.
@@ -188,6 +188,24 @@ Map visual traits to bounded object slots and prioritize silhouette over tiny de
 Validate the scene on light/dark host backgrounds despite its opaque scene canvas.
 Treat 200 KiB, 1,200 elements, and 40 animated groups as initial acceptance budgets; record browser performance separately rather than promising a frame rate from these counts.
 The validator must fail malicious or malformed SVG fixtures, not merely parse a known-good image.
+
+## SVG validation contract
+
+`github_terrarium.validate.validate_svg(raw)` accepts current generator-format UTF-8 bytes unchanged and returns `None`, or raises `ValueError`.
+Call it explicitly after rendering; bundle validation, manifest checks and CLI integration remain separate planned work.
+The standard-library XML tree builder rejects DTDs and processing instructions and stops construction above 1,200 elements or depth 32; input above 200 KiB is rejected before parsing.
+No external entity, file, URL or socket resolver is installed.
+Only the SVG namespace and the generator's explicit element/attribute vocabulary are accepted; numeric geometry must be finite with absolute values at most 1,000,000.
+Path command arities, arc flags/radii, and translate/scale argument separators are validated with separate path and numeric-list grammars.
+The exact renderer ambient stylesheet is accepted as trusted source; every other stylesheet is rejected rather than interpreted by a general CSS parser.
+Inline styles permit only a finite animation delay, and CSS may be absent for a complete static illustration.
+Count groups matching the actual animation-family selectors, even without the helper `ambient` class; without a stylesheet the count is zero.
+Animated reusable definitions are rejected to prevent cloning from bypassing the 40-group budget.
+IDs must be unique; paint, clip and use references must resolve to the expected definition types.
+An iterative dependency graph rejects reference cycles and conservative expanded traversals above 10,000 nodes.
+Identity/date/stage labels require the generator's direct-root placement, font attributes and nonempty validated text, with no hiding transforms, opacity or clipping on the identity group.
+This is structural metadata validation; perceptual contrast, overlap, composed transform extents and browser performance remain rendered-gallery checks.
+No runtime dependency or change to renderer output, growth/state/scoring/seed versions is introduced.
 
 ## Atomic publication
 
