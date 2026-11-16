@@ -103,8 +103,35 @@ Keep a seed-stage habitat visually complete even when every metric is zero.
 
 ## Visual and motion direction
 
-Use a side-view glass terrarium with layered soil, a central plant, ground vegetation, a pond, and restrained ambient particles.
-The initial art direction is botanical illustration with readable silhouettes and soft color variation.
+Art-direction decision: 2026-11-16.
+Use a container-free landscape cross-section in a layered paper-cut style, with distant ridges, uneven moss-covered terrain, a visible soil/root section, a main tree, a pond, and restrained ambient particles.
+Glass-vessel walls and reflections are not part of the composition; a thin rounded image border may frame the canvas.
+Use readable silhouettes, overlapping vegetation groups, and depth from distinct foreground, middle, and distant layers.
+
+### Paper-cut art rules
+
+1. Each paper piece has one flat-color silhouette, with no internal gradients or shading.
+2. Shadows reuse the same contour through `<use>`, translated down and to the right as a dark copy.
+3. Light comes from behind the upper left; distant layers are lighter and warmer, while foreground layers are darker and cooler.
+4. Gradients are limited to the sky, light bloom, and fireflies.
+5. Branches extend toward the light, and thick roots extend toward the pond.
+6. Color accents are limited to coral mushrooms and brown cattails.
+
+Foliage pieces use a single contour with nine leaf tips and short pressed vein strokes.
+Keep the canopy clear of identity/stage labels and distinguish rock moss from the surrounding ground.
+Keep artwork self-contained, without filters, scripts, or external images.
+
+### Reference and implementation boundary
+
+The [Sanctuary paper-cut reference](../../assets/references/terrarium-papercut-sanctuary.svg) is the operator-supplied SVG created with Claude and retained unchanged from the supplied file.
+It defines the target composition and art treatment; its fixed login, dates, and stage are design-mockup labels, not collected activity or generated growth state.
+The reference is separate from packaged runtime assets and is not loaded by the current renderer.
+Renderer version 2 still uses the earlier vessel composition; adopting this direction requires low-activity and high-activity comparison scenes and a separate renderer implementation plan.
+Keeping the reference does not establish GitHub README playback or complete the fixture-gallery and visual-approval gates.
+Source and artwork licensing remain subject to the release license decision.
+
+### Scene format and motion
+
 The SVG has a responsive `viewBox` with a design size of 900 × 360 and an opaque, self-contained scene background.
 An opaque scene gives one consistent palette on both light and dark GitHub pages; transparent variants are deferred.
 A compact identity label and last complete activity date make the image recognizable and its freshness understandable.
@@ -148,6 +175,6 @@ GitHub caching may delay the display of a new image; animation playback itself d
 ## Pending release decisions
 
 Select a repository license before the first reusable code/art release; public visibility is not a license choice.
-Confirm the botanical art direction through a rendered fixture gallery before expanding artwork.
+Validate the paper-cut direction across growth stages and activity personas through a rendered fixture gallery before adopting it in the renderer or expanding artwork.
 Calibrate scoring constants and performance budgets using the first implementation; change scoring only through a versioned migration decision.
 The architecture and implementation order are defined in [the technical design](architecture.md) and [the plan](../plans/implementation.md).
