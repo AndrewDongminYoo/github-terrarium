@@ -64,7 +64,7 @@ Traceability: AC-02, AC-03, AC-04, AC-06, and AC-12.
 - [x] Use fixed anchors and independent seeded variation so one changing trait does not rearrange the habitat.
 - [x] Add leaf sway, firefly travel, and pond ripples through embedded CSS; add complete static and reduced-motion states.
 - [x] Implement `validate.py` for XML structure, prohibited content/references, escaped text, and the agreed size/element/animation budgets; see [SVG validation verification](../notes/svg-validation-verification.md).
-- [ ] Render the fixture gallery through HTML image elements and capture each persona at narrow and wide widths on light/dark host backgrounds.
+- [x] Render the fixture gallery through HTML image elements and capture each persona at narrow and wide widths on light/dark host backgrounds; see [fixture gallery verification](../notes/fixture-gallery-verification.md) for the pending WebKit reduced-motion and Linux cells.
 
 Acceptance: all five metrics create understandable differences, every stage is complete, and reduced motion retains the same scene.
 Verification: XML/security-negative fixtures, byte-identical rendering from fixed inputs, 360/768/900-pixel captures, normal/reduced-motion captures, and time-separated frames proving motion through `img`.
