@@ -26,5 +26,5 @@ Generate a personalized, animated SVG terrarium from public GitHub activity and 
 ## Verification
 
 For documentation changes, check relative links, examples, and `git diff --check`.
-Run `python -m unittest discover -s tests -v`, `ruff check src tests`, and `ruff format --check src tests` in the installed Python 3.12 environment.
+Run `python -m unittest discover -s tests -v`, `ruff check src tests tools`, and `ruff format --check src tests tools` in the installed Python 3.12 environment.
 The `probe`, `collect`, offline `grow`, `build`, `validate`, and `publish` commands exist; publisher tests use local bare remotes.

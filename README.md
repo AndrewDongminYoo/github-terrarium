@@ -9,13 +9,13 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, and a low-level `publish` command pushes a validated bundle to the `output` branch; the full browser gallery, conflict recollection, and the daily workflow remain planned.
+The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, and a low-level `publish` command pushes a validated bundle to the `output` branch; a development-only browser fixture gallery checks the images through HTML `img` elements, and conflict recollection and the daily workflow remain planned.
 No scheduled generation is available at this stage.
 
 ## Run the collection probe
 
 Use Python 3.12 or later.
-The package has no third-party runtime dependencies; Ruff is a pinned development-only checker.
+The package has no third-party runtime dependencies; Ruff and Playwright are pinned development-only tools.
 
 ```bash
 python -m venv .venv
@@ -35,11 +35,11 @@ It writes no growth state and never updates a remote branch.
 
 ```bash
 python -m unittest discover -s tests -v
-ruff check src tests
-ruff format --check src tests
+ruff check src tests tools
+ruff format --check src tests tools
 ```
 
-The CI workflow is prepared to run these checks and a read-only workflow-token probe on trusted pushes.
+The CI workflow is prepared to run the tests, Ruff over `src tests`, and a read-only workflow-token probe on trusted pushes; it does not lint `tools` yet, so run the `tools` checks locally.
 Hosted tests and public API access with the default workflow token passed in [Actions run 43690047131](https://github.com/AndrewDongminYoo/github-terrarium/actions/runs/43690047131) at `aaa3759`.
 Daily review recovery was verified against existing public reviews; see [collection evidence](docs/notes/collection-verification.md).
 Regenerate the development lock with `uv pip compile requirements-dev.in --generate-hashes -o requirements-dev.txt` after changing the input.
@@ -140,6 +140,23 @@ PYTHON
 Call this API explicitly; `render` does not invoke it automatically.
 See [SVG validation verification](docs/notes/svg-validation-verification.md) for negative-fixture coverage and limits.
 
+## Check the fixture gallery in browsers
+
+The gallery embeds every fixture SVG through HTML `img` elements: the five personas, every growth stage, a fully saturated Sanctuary, a renamed user, and a calm inactive habitat, all grown with the existing growth engine.
+
+```bash
+python -m playwright install chromium webkit
+python tools/gallery.py build
+python tools/gallery.py check
+```
+
+`build` is offline and writes `work/gallery/index.html`, the SVGs, and measurements; open the page in any browser to review the scenes.
+`check` runs Chromium and then WebKit at 360/768/900 CSS pixels, on light and dark host backgrounds, with normal and reduced motion, and fails on horizontal overflow, clipping, missing motion, moving text, or reduced-motion changes.
+It also runs deliberate overflow, clipping, missing-motion and ignored-reduced-motion controls and fails if any of them passes.
+Captures and `results-<engine>.json` stay in the ignored `work/gallery/` directory, and every browser it opens is closed.
+Unit tests cover the browser-free parts; the browser checks run only through this command.
+See [fixture gallery verification](docs/notes/fixture-gallery-verification.md) for engine versions, results, measurements and pending cells; visual approval remains a separate review.
+
 ## Build and validate an output bundle
 
 `build` is offline: it reconciles growth from a snapshot, renders and validates the SVG, and writes `terrarium.svg`, `state.json`, and `manifest.json` to a bundle directory.
@@ -212,7 +229,7 @@ main
 │   └── specs/
 ├── src/github_terrarium/
 ├── tests/
-└── tools/            # authoring-time asset extraction
+└── tools/            # asset extraction and the browser fixture gallery
 ```
 
 The planned `output` branch will contain `terrarium.svg`, `state.json`, and `manifest.json` at its root.
