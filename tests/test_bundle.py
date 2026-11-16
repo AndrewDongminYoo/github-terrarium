@@ -31,6 +31,7 @@ from github_terrarium.models import canonical_json
 from github_terrarium.render import RENDERER_VERSION, render
 
 COMMIT = "0123456789abcdef0123456789abcdef01234567"
+PRIOR = advance(snapshot(prs=1))
 
 
 def built():
@@ -211,7 +212,7 @@ class WriteTests(unittest.TestCase):
     def test_bootstrap_refuses_existing_bundle_and_keeps_bytes(self):
         with tempfile.TemporaryDirectory() as parent:
             destination = Path(parent) / "out"
-            write_bundle(built(), destination, bootstrap=True)
+            write_bundle(built(), destination, previous=None)
             before = contents(destination)
             for name in OWNED:
                 with self.subTest(name=name):
@@ -220,19 +221,19 @@ class WriteTests(unittest.TestCase):
                         single.mkdir()
                         (single / name).write_bytes(b"old")
                         with self.assertRaisesRegex(ValueError, "Bootstrap refuses"):
-                            write_bundle(built(), single, bootstrap=True)
+                            write_bundle(built(), single, previous=None)
                         self.assertEqual(contents(single), {name: b"old"})
             self.assertEqual(contents(destination), before)
 
     def test_failed_validation_leaves_destination_and_parent_unchanged(self):
         with tempfile.TemporaryDirectory() as parent:
             destination = Path(parent) / "out"
-            write_bundle(built(), destination, bootstrap=True)
+            write_bundle(built(), destination, previous=None)
             (destination / "README.md").write_text("unrelated\n")
             before = contents(destination)
             broken = {**built(), SVG: b"<svg/>"}
             with self.assertRaises(ValueError):
-                write_bundle(broken, destination, bootstrap=False)
+                write_bundle(broken, destination, previous=PRIOR)
             self.assertEqual(contents(destination), before)
             self.assertEqual(sorted(p.name for p in Path(parent).iterdir()), ["out"])
 
@@ -240,22 +241,19 @@ class WriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as parent:
             with self.assertRaises(ValueError):
                 write_bundle(
-                    {**built(), SVG: b"<svg/>"}, Path(parent) / "out", bootstrap=True
+                    {**built(), SVG: b"<svg/>"}, Path(parent) / "out", previous=None
                 )
             self.assertEqual(list(Path(parent).iterdir()), [])
 
     def test_update_preserves_unrelated_files(self):
         with tempfile.TemporaryDirectory() as parent:
             destination = Path(parent) / "out"
-            write_bundle(built(), destination, bootstrap=True)
+            write_bundle(built(), destination, previous=None)
             (destination / "README.md").write_text("unrelated\n")
             later = build_files(
-                advance(
-                    snapshot(end=date(2026, 11, 16), prs=2), advance(snapshot(prs=1))
-                ),
-                COMMIT,
+                advance(snapshot(end=date(2026, 11, 16), prs=2), PRIOR), COMMIT
             )
-            write_bundle(later, destination, bootstrap=False)
+            write_bundle(later, destination, previous=PRIOR)
             self.assertEqual((destination / "README.md").read_text(), "unrelated\n")
             self.assertEqual(
                 validate_bundle(destination)["complete_activity_day"], "2026-11-15"
@@ -266,12 +264,32 @@ class WriteTests(unittest.TestCase):
         other["subject"] = {"id": "U2", "login": "hubot"}
         with tempfile.TemporaryDirectory() as parent:
             destination = Path(parent) / "out"
-            write_bundle(built(), destination, bootstrap=True)
+            write_bundle(built(), destination, previous=None)
             before = contents(destination)
             with self.assertRaisesRegex(ValueError, "different subject"):
                 write_bundle(
-                    build_files(advance(other), COMMIT), destination, bootstrap=False
+                    build_files(advance(other), COMMIT), destination, previous=PRIOR
                 )
+            self.assertEqual(contents(destination), before)
+
+    def test_update_refuses_a_stale_prior_state(self):
+        newer = advance(snapshot(prs=2), PRIOR)
+        with tempfile.TemporaryDirectory() as parent:
+            destination = Path(parent) / "out"
+            write_bundle(built(), destination, previous=None)
+            write_bundle(build_files(newer, COMMIT), destination, previous=PRIOR)
+            before = contents(destination)
+            with self.assertRaisesRegex(ValueError, "not the destination bundle"):
+                write_bundle(built(), destination, previous=PRIOR)
+            self.assertEqual(contents(destination), before)
+
+    def test_same_day_rerun_from_the_destination_state_succeeds(self):
+        with tempfile.TemporaryDirectory() as parent:
+            destination = Path(parent) / "out"
+            write_bundle(built(), destination, previous=None)
+            before = contents(destination)
+            rerun = build_files(advance(snapshot(prs=1), PRIOR), COMMIT)
+            write_bundle(rerun, destination, previous=PRIOR)
             self.assertEqual(contents(destination), before)
 
     def test_update_refuses_a_partial_destination(self):
@@ -281,7 +299,7 @@ class WriteTests(unittest.TestCase):
             (destination / STATE).write_bytes(built()[STATE])
             before = contents(destination)
             with self.assertRaisesRegex(ValueError, "invalid bundle.*missing"):
-                write_bundle(built(), destination, bootstrap=False)
+                write_bundle(built(), destination, previous=PRIOR)
             self.assertEqual(contents(destination), before)
 
     def test_symlinked_destination_is_rejected(self):
@@ -290,7 +308,7 @@ class WriteTests(unittest.TestCase):
             real.mkdir()
             os.symlink(real, Path(parent) / "link")
             with self.assertRaisesRegex(ValueError, "symbolic link"):
-                write_bundle(built(), Path(parent) / "link", bootstrap=True)
+                write_bundle(built(), Path(parent) / "link", previous=None)
             self.assertEqual(list(real.iterdir()), [])
 
 

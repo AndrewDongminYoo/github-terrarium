@@ -151,7 +151,9 @@ python -m github_terrarium validate --bundle-dir bundle
 ```
 
 For an update, pass `--state` with the prior `state.json` instead of `--bootstrap`; the same directory may be the destination.
-`--bootstrap` refuses a directory that already holds any bundle file, an update refuses an invalid or different-user bundle there, and other files in the directory are never touched.
+`--bootstrap` refuses a directory that already holds any bundle file.
+An update into a directory that holds a bundle requires that bundle to be valid, for the same user, and to contain exactly the supplied prior state, so a stale `--state` copy cannot replace newer growth.
+Other files in the directory are never touched.
 `validate` checks the three files without modifying them.
 The [technical design](docs/specs/architecture.md#atomic-publication) defines the manifest keys and the validation rules.
 

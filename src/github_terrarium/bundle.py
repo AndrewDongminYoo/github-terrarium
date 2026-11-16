@@ -157,13 +157,15 @@ def validate_bundle(directory):
     return validate_files(read_bundle(directory))
 
 
-def write_bundle(files, directory, *, bootstrap):
+def write_bundle(files, directory, *, previous):
     """Stage beside the destination, re-validate from disk, then replace.
 
-    A bootstrap refuses a destination that already holds any owned path, and
-    an update replaces only a valid bundle of the same subject, so a local
-    build can never silently reset an existing habitat. Unrelated files
-    in the destination are never touched. The three replacements are not
+    `previous` is the prior state the candidate was built from, or None for a
+    bootstrap. A bootstrap refuses a destination that already holds any owned
+    path, and an update replaces only a valid bundle whose state is exactly
+    `previous`, so a local build can never silently reset an existing habitat
+    or replace newer growth with a candidate built from stale state. Unrelated
+    files in the destination are never touched. The three replacements are not
     atomic as a set; a torn bundle fails validation through its hashes.
     """
     directory = Path(directory)
@@ -172,7 +174,7 @@ def write_bundle(files, directory, *, bootstrap):
     if directory.exists() and not directory.is_dir():
         raise ValueError("Bundle path exists and is not a directory")
     existing = [n for n in OWNED if os.path.lexists(directory / n)]
-    if bootstrap and existing:
+    if previous is None and existing:
         raise ValueError("Bootstrap refuses a destination with existing bundle files")
     if existing:
         try:
@@ -181,6 +183,10 @@ def write_bundle(files, directory, *, bootstrap):
             raise ValueError(f"Destination holds an invalid bundle: {error}") from None
         if current["subject_id"] != json.loads(files[MANIFEST])["subject_id"]:
             raise ValueError("Destination bundle belongs to a different subject")
+        if (directory / STATE).read_bytes() != canonical_json(previous).encode():
+            raise ValueError(
+                "Supplied prior state is not the destination bundle's state"
+            )
     if not directory.parent.is_dir():
         raise ValueError("Bundle directory parent does not exist")
     staging = Path(tempfile.mkdtemp(prefix=".bundle-", dir=directory.parent))

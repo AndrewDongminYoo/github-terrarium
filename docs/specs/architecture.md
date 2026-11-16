@@ -227,7 +227,7 @@ All three files use the canonical serialization: `state.json` and `manifest.json
 Bundle validation rejects missing or linked files, size overruns, unknown or missing keys, non-canonical JSON, hash mismatches, manifest values that differ from state, a renderer version outside the supported set or different from the SVG root, and any state or SVG validation failure.
 It does not re-render the SVG; a renderer version change must decide explicitly whether earlier bundles stay in the supported set.
 `build` writes to a staging directory beside the destination, validates the staged files from disk, then replaces only the three owned paths; other destination files are untouched.
-`build --bootstrap` refuses a destination that already holds any owned file, and an update replaces only a destination bundle that validates and has the same subject ID, so a local build cannot silently reset a habitat.
+`build --bootstrap` refuses a destination that already holds any owned file, and an update replaces only a destination bundle that validates, has the same subject ID, and whose `state.json` is byte-identical to the supplied prior state, so a local build cannot silently reset a habitat or replace newer growth with a candidate built from stale state.
 `SUPPORTED_RENDERERS` in `bundle.py` is a literal set, so a renderer change cannot drop earlier versions implicitly.
 The three replacements are not atomic as a set; validation detects a torn bundle through its hashes.
 Do not embed the output commit's own SHA or a wall-clock generation timestamp in its contents.

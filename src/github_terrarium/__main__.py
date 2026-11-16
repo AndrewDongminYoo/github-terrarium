@@ -75,7 +75,7 @@ def main(argv=None):
             files = build_files(
                 advance(read_json(args.snapshot), previous), args.source_commit
             )
-            result = write_bundle(files, args.bundle_dir, bootstrap=args.bootstrap)
+            result = write_bundle(files, args.bundle_dir, previous=previous)
             print(canonical_json(result), end="")
             return 0
         if args.command == "validate":
