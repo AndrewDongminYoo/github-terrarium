@@ -9,7 +9,7 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs; the full browser gallery, bundle validation, and publication remain planned.
+The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle; the full browser gallery and publication remain planned.
 No generated image publication or daily workflow is available at this stage.
 
 ## Run the collection probe
@@ -100,7 +100,7 @@ The `render(state)` Python API accepts a validated growth state and returns dete
 It reuses the existing stages and normalized traits, with stable subject-ID-based anchors and bounded object slots.
 Embedded CSS adds leaf sway, firefly travel, and pond ripples; after seven completed UTC days with no eligible PR, review, or issue activity, motion becomes calmer without changing earned growth or geometry.
 Reduced motion disables every ambient animation and transition, and disabled CSS leaves the complete static scene visible.
-No rendering CLI, bundle validator, or publication is included yet.
+The `build` command below renders through this API; publication is not included yet.
 
 ```bash
 python - <<'PYTHON'
@@ -138,8 +138,22 @@ PYTHON
 ```
 
 Call this API explicitly; `render` does not invoke it automatically.
-Bundle/state/manifest validation and a validation CLI remain planned.
 See [SVG validation verification](docs/notes/svg-validation-verification.md) for negative-fixture coverage and limits.
+
+## Build and validate an output bundle
+
+`build` is offline: it reconciles growth from a snapshot, renders and validates the SVG, and writes `terrarium.svg`, `state.json`, and `manifest.json` to a bundle directory.
+It prints the manifest on success; a data or validation failure exits 1 with no stdout and leaves the destination and inputs unchanged, and usage errors exit 2.
+
+```bash
+python -m github_terrarium build --snapshot tests/fixtures/pull-requests.json --bootstrap --bundle-dir bundle --source-commit "$(git rev-parse HEAD)"
+python -m github_terrarium validate --bundle-dir bundle
+```
+
+For an update, pass `--state` with the prior `state.json` instead of `--bootstrap`; the same directory may be the destination.
+`--bootstrap` refuses a directory that already holds any bundle file, an update refuses an invalid or different-user bundle there, and other files in the directory are never touched.
+`validate` checks the three files without modifying them.
+The [technical design](docs/specs/architecture.md#atomic-publication) defines the manifest keys and the validation rules.
 
 ## Planned experience
 

@@ -1,7 +1,7 @@
 # GitHub Terrarium Implementation Plan
 
-Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, and standalone SVG validation implemented; the reviewed browser gallery and bundle/publication work are next.
-Future build/validate/publish flags remain deferred to their implementation milestones.
+Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, and offline output-bundle build/validation implemented; the reviewed browser gallery and publication work are next.
+Future publish flags remain deferred to their implementation milestone.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
 The initial documentation bootstrap is complete; runtime implementation has started.

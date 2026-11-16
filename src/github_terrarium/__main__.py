@@ -1,4 +1,4 @@
-"""Read-only diagnostic command; no output branch mutations."""
+"""Collection, offline growth, and bundle commands; no output branch mutations."""
 
 import argparse
 import os
@@ -6,6 +6,7 @@ import sys
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
+from .bundle import build_files, source_commit, validate_bundle, write_bundle
 from .config import load_config
 from .github import GraphQLClient
 from .growth import advance
@@ -50,8 +51,36 @@ def main(argv=None):
     source.add_argument("--state", type=Path)
     source.add_argument("--bootstrap", action="store_true")
     command.add_argument("--recover-through", type=date.fromisoformat)
+    command = commands.add_parser(
+        "build", help="Build and validate a three-file output bundle offline"
+    )
+    command.add_argument("--snapshot", type=Path, required=True)
+    source = command.add_mutually_exclusive_group(required=True)
+    source.add_argument("--state", type=Path)
+    source.add_argument("--bootstrap", action="store_true")
+    command.add_argument("--bundle-dir", type=Path, required=True)
+    command.add_argument("--source-commit", type=source_commit, required=True)
+    command = commands.add_parser(
+        "validate", help="Validate an existing three-file output bundle"
+    )
+    command.add_argument("--bundle-dir", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command == "build":
+            previous = (
+                validate_state(read_json(args.state))
+                if args.state is not None
+                else None
+            )
+            files = build_files(
+                advance(read_json(args.snapshot), previous), args.source_commit
+            )
+            result = write_bundle(files, args.bundle_dir, bootstrap=args.bootstrap)
+            print(canonical_json(result), end="")
+            return 0
+        if args.command == "validate":
+            print(canonical_json(validate_bundle(args.bundle_dir)), end="")
+            return 0
         if args.command == "grow":
             previous = (
                 validate_state(read_json(args.state))
