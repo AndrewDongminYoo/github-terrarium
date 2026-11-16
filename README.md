@@ -9,7 +9,7 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The original SVG renderer and bounded ambient motion are available as a Python API; the full browser gallery, bundle validation, and publication remain planned.
+The paper-cut SVG renderer and bounded ambient motion are available as a Python API; the full browser gallery, bundle validation, and publication remain planned.
 No generated image publication or daily workflow is available at this stage.
 
 ## Run the collection probe
@@ -114,8 +114,11 @@ Path("terrarium-preview.svg").write_bytes(render(state))
 PYTHON
 ```
 
-The scene uses original packaged [SVG primitives](assets/terrarium/botanical.svg); their [provenance](assets/terrarium/README.md) is recorded with the source.
-The renderer alone does not establish full browser compatibility or approval of the botanical direction; those remain gallery and operator-review gates.
+The container-free scene assembles packaged [paper-cut SVG pieces](assets/terrarium/papercut.svg) derived from the preserved design reference; their [provenance and extraction command](assets/terrarium/README.md) are recorded with the source.
+Earned growth expands the tree and roots through five stages; recent activity fills bounded canopy, branch, seedling, flower, firefly, pond, mushroom, and ground-cover slots.
+The fixed banner above previews the reference artwork; it is separate from generated renderer output.
+The renderer alone does not establish full browser compatibility or approval of its generated scenes; those remain gallery and operator-review gates.
+See [paper-cut port verification](docs/notes/papercut-renderer-verification.md) for the checked scope and remaining limits.
 See [motion verification](docs/notes/motion-verification.md) for the tested fallback behavior and reduced-motion browser setup.
 
 ## Planned experience

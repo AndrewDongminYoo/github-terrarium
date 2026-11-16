@@ -61,7 +61,7 @@ Traceability: AC-02, AC-03, AC-04, AC-06, and AC-12.
 
 ## Milestone 4: one complete visual prototype
 
-- [x] Implement `render.py` and original assets in `assets/terrarium/`: glass vessel, layered soil, central plant, pond, seedlings, flowers/fireflies, and mushrooms.
+- [x] Implement `render.py` and assets in `assets/terrarium/`: container-free paper-cut landscape, layered soil, tree/roots, pond, seedlings, flowers/fireflies, and mushrooms; see the [renderer port plan](2026-11-16-papercut-renderer.md).
 - [x] Use fixed anchors and independent seeded variation so one changing trait does not rearrange the habitat.
 - [x] Add leaf sway, firefly travel, and pond ripples through embedded CSS; add complete static and reduced-motion states.
 - [ ] Implement `validate.py` for XML structure, prohibited content/references, escaped text, and the agreed size/element/animation budgets.
@@ -116,7 +116,7 @@ Use the installed `agent-browser` in a named isolated session for the public dem
 Reuse milestone 4's browser harness for viewport and reduced-motion settings, and use the operator's named browser only when signed-in state is required.
 
 1. Read the published output commit and `manifest.json`; record the expected complete-activity date and SVG hash.
-2. Open the rendered repository README at 360 CSS pixels and capture the entire terrarium; expect a readable identity/date label, a visible whole vessel, and no image-caused horizontal overflow.
+2. Open the rendered repository README at 360 CSS pixels and capture the entire terrarium; expect a readable identity/date label, a visible whole habitat, and no image-caused horizontal overflow.
 3. With normal motion, capture the same image at two times at least two seconds apart; expect leaf/firefly/ripple pixels to change while scene anchors and text stay fixed.
 4. Enable reduced motion, reload, and capture twice at the same interval; expect the same complete scene with no animated-pixel changes.
 5. Repeat the layout check at 900 CSS pixels on light and dark host backgrounds; compare the freshness label with the manifest's complete-activity date.

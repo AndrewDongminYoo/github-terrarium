@@ -103,7 +103,7 @@ class MotionTests(unittest.TestCase):
         raw = render(state)
         root = ET.fromstring(raw)
         groups = [n for n in root.iter() if "ambient" in n.get("class", "").split()]
-        self.assertEqual(len(groups), 38)
+        self.assertEqual(len(groups), 33)
         self.assertLessEqual(len(raw), 200 * 1024)
         self.assertLessEqual(len(list(root.iter())), 1200)
 

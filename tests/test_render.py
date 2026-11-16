@@ -57,12 +57,12 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(root.get("viewBox"), "0 0 900 360")
         for name in ("title", "desc"):
             self.assertTrue(root.find(NS + name).text)
-        for name in ("vessel", "soil", "plant", "pond", "ground", "background"):
+        for name in ("landscape-view", "soil", "plant", "pond", "ground", "background"):
             self.assertGreater(len(list(self.group(root, name))), 0)
         background = self.group(root, "background").find(NS + "rect")
         self.assertEqual(background.get("width"), "900")
         self.assertEqual(background.get("height"), "360")
-        self.assertEqual(background.get("fill"), "#f4f0e5")
+        self.assertEqual(background.get("fill"), "#f8dc8c")
         label = "".join(self.group(root, "identity").itertext())
         self.assertIn("octocat", label)
         self.assertIn("2026-11-14", label)
@@ -125,7 +125,7 @@ class RenderTests(unittest.TestCase):
             "pond",
             "mushrooms",
             "ground",
-            "vessel",
+            "landscape-view",
             "soil",
         )
         for metric, affected in (
@@ -196,7 +196,7 @@ class RenderTests(unittest.TestCase):
         _, original = self.scene(state)
         state["subject"]["login"] = "renamed-user"
         _, renamed = self.scene(state)
-        for name in ("vessel", "soil", "plant", "pond", "ground"):
+        for name in ("landscape-view", "soil", "plant", "pond", "ground"):
             self.assertEqual(
                 ET.tostring(self.group(original, name)),
                 ET.tostring(self.group(renamed, name)),
