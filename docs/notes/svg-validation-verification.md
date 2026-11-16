@@ -26,10 +26,11 @@ Positive fixtures cover five personas, all five stages, saturated traits, calm m
 Exact 200 KiB / 1,200-element / 40-animation limits pass; limit-plus-one inputs fail.
 The 32-level nesting boundary passes and level 33 fails during construction.
 Actual selector matching is counted without relying on the `ambient` helper class; absent CSS assigns no animation.
+With CSS present, animated groups require `ambient` on themselves or an ancestor; a negative-first regression and a forced-reduced browser probe confirmed the unguarded family-only case before the repair.
 Tests replace socket construction and URL opening with failures while validating safe and malicious XML inputs.
 
 Run `python -m unittest discover -s tests -v`, `ruff check src tests`, `ruff format --check src tests`, changed-document link/anchor checks and `git diff --check`.
-All 80 unit tests, Ruff checks, changed-document relative targets/anchors and the bounded-read README example passed locally.
+All 81 unit tests, Ruff checks, changed-document relative targets/anchors and the bounded-read README example passed locally.
 A fresh wheel installation outside the source checkout accepted generated output and matched the source renderer's SHA-256; the renderer/artwork/growth/state files are unchanged.
 Two independent reviews found numeric-separator and fixture-reachability defects; both were repaired and independently revalidated, followed by scoped revalidation of the bounded transform matcher.
 The [Python XML API](https://docs.python.org/3.12/library/xml.etree.elementtree.html) documents the tree-builder callbacks used to reject DTDs and processing instructions.

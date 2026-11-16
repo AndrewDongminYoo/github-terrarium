@@ -200,6 +200,7 @@ Path command arities, arc flags/radii, and translate/scale argument separators a
 The exact renderer ambient stylesheet is accepted as trusted source; every other stylesheet is rejected rather than interpreted by a general CSS parser.
 Inline styles permit only a finite animation delay, and CSS may be absent for a complete static illustration.
 Count groups matching the actual animation-family selectors, even without the helper `ambient` class; without a stylesheet the count is zero.
+With CSS present, every animated group must have `ambient` on itself or an ancestor so the reduced-motion override applies.
 Animated reusable definitions are rejected to prevent cloning from bypassing the 40-group budget.
 IDs must be unique; paint, clip and use references must resolve to the expected definition types.
 An iterative dependency graph rejects reference cycles and conservative expanded traversals above 10,000 nodes.

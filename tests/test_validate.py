@@ -324,12 +324,27 @@ class SVGValidationTests(unittest.TestCase):
         validate_svg(raw(tree))
         self.rejects(add(tree, element("g")), "element budget")
         tree = minimal()
+        tree.find(NS + "g").set("class", "ambient")
         for _ in range(40):
             add(tree, element("g", **{"class": "leaf-sway"}))
         validate_svg(raw(tree))
         self.rejects(
             add(tree, element("g", **{"class": "leaf-sway"})), "animation budget"
         )
+        tree.remove(tree.find(NS + "style"))
+        validate_svg(raw(tree))
+
+    def test_animation_groups_receive_the_reduced_motion_override(self):
+        tree = add(minimal(), element("g", **{"class": "leaf-sway"}))
+        tree.find(NS + "g").set("class", "ambient\u00a0leaf-sway")
+        self.rejects(tree, "animation class")
+        tree = add(minimal(), element("g", **{"class": "leaf-sway"}))
+        self.rejects(tree, "reduced-motion")
+        tree.find(NS + "g").set("class", "ambient")
+        validate_svg(raw(tree))
+        tree = add(minimal(), element("g", **{"class": "ambient leaf-sway"}))
+        validate_svg(raw(tree))
+        tree = add(minimal(), element("g", **{"class": "leaf-sway"}))
         tree.remove(tree.find(NS + "style"))
         validate_svg(raw(tree))
 

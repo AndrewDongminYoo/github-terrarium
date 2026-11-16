@@ -247,7 +247,7 @@ def _attributes(node, tag, references):
         elif name == "transform":
             _transform(value)
         elif name == "class":
-            classes = value.split()
+            classes = re.split(r"[ \t\r\n]+", value.strip(" \t\r\n"))
             if (
                 not classes
                 or len(set(classes)) != len(classes)
@@ -401,7 +401,7 @@ def validate_svg(raw):
     ids = {}
     references = defaultdict(list)
     styles = []
-    animations = 0
+    animations = []
     containers = {
         "svg": {"title", "desc", "style", "defs", "g", "rect"},
         "defs": {"g", "path", "clipPath", "linearGradient", "radialGradient"},
@@ -442,14 +442,24 @@ def validate_svg(raw):
         if set(node.get("class", "").split()) & FAMILIES:
             if node in definitions:
                 raise ValueError("Animated SVG definitions are unsupported")
-            animations += 1
+            animations.append(node)
         if tag in {"linearGradient", "radialGradient"}:
             offsets = [_number(n.get("offset", "")) for n in node]
             if len(offsets) < 2 or offsets != sorted(offsets):
                 raise ValueError("Invalid SVG gradient stops")
     if len(styles) > 1:
         raise ValueError("Duplicate SVG stylesheet")
-    if styles and animations > MAX_ANIMATIONS:
-        raise ValueError("SVG animation budget exceeded")
+    if styles:
+        if len(animations) > MAX_ANIMATIONS:
+            raise ValueError("SVG animation budget exceeded")
+        for node in animations:
+            ancestor = node
+            while (
+                ancestor is not None
+                and "ambient" not in ancestor.get("class", "").split()
+            ):
+                ancestor = parents.get(ancestor)
+            if ancestor is None:
+                raise ValueError("SVG animation lacks reduced-motion override")
     _metadata(root, ids)
     _references(nodes, ids, definitions, references)
