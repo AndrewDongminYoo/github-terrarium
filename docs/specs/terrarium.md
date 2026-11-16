@@ -1,8 +1,8 @@
 # GitHub Terrarium Specification
 
-Status: proposed v1 contract, ready for implementation planning.
+Status: v1 contract; implementation in progress.
 Decision date: 2026-11-15.
-This document defines intended behavior; it does not describe a completed implementation.
+This document defines intended behavior; see [README.md](../../README.md) for what is currently implemented.
 
 ## Purpose
 

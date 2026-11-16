@@ -163,13 +163,20 @@ See [SVG validation verification](docs/notes/svg-validation-verification.md) for
 ```plaintext
 main
 ├── AGENTS.md
-├── README.md
 ├── CONTRIBUTING.md
-└── docs/
-    ├── plans/implementation.md
-    └── specs/
-        ├── architecture.md
-        └── terrarium.md
+├── README.md
+├── pyproject.toml
+├── terrarium.toml
+├── assets/
+│   ├── references/   # unchanged design reference
+│   └── terrarium/    # packaged SVG pieces (github_terrarium.art)
+├── docs/
+│   ├── notes/        # dated verification evidence
+│   ├── plans/
+│   └── specs/
+├── src/github_terrarium/
+├── tests/
+└── tools/            # authoring-time asset extraction
 ```
 
 The planned `output` branch will contain `terrarium.svg`, `state.json`, and `manifest.json`.
