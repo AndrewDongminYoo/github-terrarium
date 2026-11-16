@@ -271,6 +271,29 @@ def _read_back(remote, token, commit):
         return head, _read_owned(git, commit, _tree(git, commit))
 
 
+def read_output(repo, *, remote=None, token=None):
+    """Return the remote output head and its validated owned files.
+
+    Returns `(None, None)` when the branch is absent. An existing head whose
+    bundle is missing or invalid raises ValueError and never reads as absent;
+    a head moved or deleted during the fetch raises PublishConflict.
+    """
+    repo = repository(repo)
+    remote = remote or f"https://github.com/{repo}.git"
+    with tempfile.TemporaryDirectory(prefix="terrarium-read-") as directory:
+        git = _Git(directory, token)
+        head = _remote_head(git, remote)
+        if head is None:
+            return None, None
+        _fetch(git, remote, head)
+        try:
+            files = _read_owned(git, head, _tree(git, head))
+            validate_files(files)
+        except ValueError as error:
+            raise ValueError(f"Existing output is invalid: {error}") from None
+        return head, files
+
+
 def publish(bundle_dir, repo, parent, *, bootstrap=False, remote=None, token=None):
     """Publish `bundle_dir` over the expected output `parent`; return a result.
 

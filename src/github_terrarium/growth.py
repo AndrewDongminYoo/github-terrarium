@@ -9,6 +9,8 @@ from .models import count, iso_day, validate_snapshot
 ACTIVITY = ("prs", "reviews", "issues")
 STOCK = ("stars", "forks")
 CAPS = {"stars": 500, "forks": 100, "prs": 30, "reviews": 60, "issues": 20}
+GAP_TOO_LONG = "Gap exceeds 90 days; use explicit recovery batches"
+RECOVERY_UNFINISHED = "Finish explicit recovery before normal updates"
 
 
 def activity_xp(values):
@@ -102,10 +104,10 @@ def advance(snapshot, previous=None, *, recover_through=None):
             )
         else:
             if state["recovery_target"] is not None:
-                raise ValueError("Finish explicit recovery before normal updates")
+                raise ValueError(RECOVERY_UNFINISHED)
             required_start = min(end - timedelta(days=30), next_day)
             if (end - required_start).days > 90:
-                raise ValueError("Gap exceeds 90 days; use explicit recovery batches")
+                raise ValueError(GAP_TOO_LONG)
             if end != observed or start != required_start:
                 raise ValueError(
                     "Snapshot must refresh the recent window and all missed days"

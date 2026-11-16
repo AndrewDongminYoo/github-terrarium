@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, offline bundle build/validation, and single-attempt output publication are implemented; the scheduled workflow and conflict recollection remain planned.
+Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, offline bundle build/validation, output publication, and the `generate` orchestration with one conflict recollection are implemented; the scheduled workflow remains planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -45,7 +45,8 @@ main/
 │   ├── render.py
 │   ├── validate.py
 │   ├── bundle.py
-│   └── publish.py
+│   ├── publish.py
+│   └── generate.py
 ├── assets/references/
 ├── assets/terrarium/
 ├── tests/fixtures/
@@ -83,6 +84,8 @@ Routine runs use the current UTC date; historical recovery must not fabricate pa
 Failures return exit status 1 with sanitized diagnostics; usage errors return 2; a publish conflict returns 3.
 The offline `grow --snapshot FILE` command requires either `--state FILE` or `--bootstrap`, accepts optional `--recover-through DATE`, and prints a validated candidate state.
 `--remote` overrides the default `https://github.com/OWNER/NAME.git` remote for local bare-remote tests.
+The online `generate --config FILE --repository OWNER/NAME [--bootstrap] [--source-commit SHA] [--remote URL]` command connects collection, growth, bundle building, and publication; `--source-commit` defaults to `GITHUB_SHA`, and a missing or non-canonical SHA is a usage error.
+The token comes only from `GH_TOKEN` or `GITHUB_TOKEN`, and the output branch is always `output`.
 
 ## Collection and normalization
 
@@ -252,7 +255,16 @@ The commit replaces only the three owned root entries, keeps every other root en
 Byte-identical owned files produce `no-change` with no commit or push.
 Readback uses a second fresh temporary repository; a head or hash mismatch after a successful push exits 1 and names the pushed commit.
 The success result is canonical JSON with `commit`, `outcome` (`published` or `no-change`), `parent` (null for a bootstrap), and `sha256` of all three files.
-Recollection and the single retry after a conflict belong to the orchestration layer and are not implemented yet.
+Recollection and the single retry after a conflict belong to the orchestration layer in `generate.py`.
+
+Each `generate` attempt reads the output head and validated prior bundle through `publish.read_output` before any collection.
+An absent branch requires `--bootstrap`; `--bootstrap` over an existing branch fails, and an existing branch whose bundle is missing or invalid fails without bootstrapping.
+A prior state with a non-null `recovery_target`, a required interval over 90 days, or a prior state dated after the current UTC date fails before collection; the first two name the `grow --recover-through` batches.
+With current UTC date D, a bootstrap collects `[D - 30 days, D)`, and an update collects `[min(D - 30 days, last complete day + 1), D)`; stock is observed on D, and the update passes the prior subject ID as the expected subject.
+The attempt reconciles growth, builds and validates the bundle in a fresh temporary directory, and publishes it with the head that was read as the expected parent.
+A `PublishConflict` in the read or the publication discards that attempt's snapshot and candidate; a second attempt reads the clock, the head, and the bundle again and collects fresh data, even on the same UTC day.
+A conflict in the second attempt exits 3; collection, build, validation, and readback failures exit 1 and are not retried.
+Success prints canonical JSON with `activity_interval` (`start` inclusive, `end` exclusive), `attempts`, `bytes` of `state.json` and `terrarium.svg`, `commit`, `outcome` (`published` or `no-change`), `recovered_gap_days` (days collected beyond the 30-day window), `stock_observation_day`, `subject_id`, and `xp_delta` (total awarded XP after minus before); a failure prints nothing to stdout and one sanitized line to stderr.
 
 ## GitHub Actions boundary
 

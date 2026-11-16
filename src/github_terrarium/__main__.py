@@ -1,4 +1,4 @@
-"""Collection, offline growth, bundle, and output-branch publication commands."""
+"""Collection, offline growth, bundle, publication, and generation commands."""
 
 import argparse
 import os
@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .bundle import build_files, source_commit, validate_bundle, write_bundle
 from .config import load_config
+from .generate import generate
 from .github import GraphQLClient
 from .growth import advance
 from .models import canonical_json
@@ -73,12 +74,38 @@ def main(argv=None):
     command.add_argument("--expected-parent", type=expected_parent, required=True)
     command.add_argument("--bootstrap", action="store_true")
     command.add_argument("--remote", help="Override the GitHub remote URL")
+    command = commands.add_parser(
+        "generate", help="Collect, grow, build, and publish with one conflict retry"
+    )
+    command.add_argument("--config", type=Path, required=True)
+    command.add_argument("--repository", type=repository, required=True)
+    command.add_argument("--bootstrap", action="store_true")
+    command.add_argument(
+        "--source-commit",
+        type=source_commit,
+        default=os.environ.get("GITHUB_SHA"),
+        help="Defaults to GITHUB_SHA",
+    )
+    command.add_argument("--remote", help="Override the GitHub remote URL")
     args = parser.parse_args(argv)
+    if args.command == "generate" and args.source_commit is None:
+        parser.error("--source-commit or GITHUB_SHA is required")
     if args.command == "publish" and (args.expected_parent == "absent") != (
         args.bootstrap
     ):
         parser.error("--bootstrap requires --expected-parent absent and vice versa")
     try:
+        if args.command == "generate":
+            result = generate(
+                load_config(args.config, args.repository),
+                args.repository,
+                args.source_commit,
+                bootstrap=args.bootstrap,
+                remote=args.remote,
+                token=os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"),
+            )
+            print(canonical_json(result), end="")
+            return 0
         if args.command == "publish":
             result = publish(
                 args.bundle_dir,

@@ -9,7 +9,7 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, and a low-level `publish` command pushes a validated bundle to the `output` branch; a development-only browser fixture gallery checks the images through HTML `img` elements, and conflict recollection and the daily workflow remain planned.
+The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, a low-level `publish` command pushes a validated bundle to the `output` branch, and `generate` connects collection, growth, building, and publication with one fresh recollection after a conflict; a development-only browser fixture gallery checks the images through HTML `img` elements, and the daily workflow remains planned.
 No scheduled generation is available at this stage.
 
 ## Run the collection probe
@@ -192,7 +192,22 @@ After a push, a fresh fetch must show the new commit as the remote head with mat
 The token comes only from `GH_TOKEN` or `GITHUB_TOKEN` and reaches Git through environment-scoped configuration, never through arguments, remote URLs, or commits; `--remote URL` overrides the default `https://github.com/OWNER/NAME.git` for local tests.
 Success prints a canonical JSON result; failures exit 1 with no stdout, a remote head that differs from the expected parent or a rejected push exits 3, and usage errors exit 2.
 A failed readback after a successful push exits 1 and names the pushed commit.
-Fetching fresh data and retrying after a conflict is not implemented yet.
+`generate` below fetches fresh data and retries once after a conflict.
+
+## Generate and publish
+
+`generate` reads the current `output` head and bundle, collects the interval that state requires, grows the state, builds and validates the bundle, and publishes it over the head it read.
+
+```bash
+GH_TOKEN=... python -m github_terrarium generate --config terrarium.toml --repository AndrewDongminYoo/github-terrarium --source-commit "$(git rev-parse HEAD)" --bootstrap
+GH_TOKEN=... python -m github_terrarium generate --config terrarium.toml --repository AndrewDongminYoo/github-terrarium --source-commit "$(git rev-parse HEAD)"
+```
+
+`--bootstrap` is accepted only while the `output` branch is absent; an existing branch without a valid bundle fails and is never reset.
+An update collects the last 30 completed UTC days plus any missed days; a gap over 90 days or an unfinished recovery fails before collection and needs `grow --recover-through` batches.
+If another publisher moves the head first, the run discards its snapshot, reads the new head, collects again, and retries once; a second conflict exits 3 and leaves the newer output untouched.
+`--source-commit` defaults to `GITHUB_SHA`, and `--remote URL` works as for `publish`.
+Success prints one JSON summary with the activity interval, stock date, recovered gap days, XP delta, file sizes, attempts, commit, and `published` or `no-change`; failures print one line to stderr and nothing to stdout.
 
 ## Planned experience
 
