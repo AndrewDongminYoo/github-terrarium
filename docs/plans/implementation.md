@@ -1,6 +1,6 @@
 # GitHub Terrarium Implementation Plan
 
-Status: collection, normalization, persistent growth, static rendering, and ambient motion implemented; validation and the reviewed gallery are next.
+Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, and standalone SVG validation implemented; the reviewed browser gallery and bundle/publication work are next.
 Future build/validate/publish flags remain deferred to their implementation milestones.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
@@ -64,7 +64,7 @@ Traceability: AC-02, AC-03, AC-04, AC-06, and AC-12.
 - [x] Implement `render.py` and assets in `assets/terrarium/`: container-free paper-cut landscape, layered soil, tree/roots, pond, seedlings, flowers/fireflies, and mushrooms; see the [renderer port plan](2026-11-16-papercut-renderer.md).
 - [x] Use fixed anchors and independent seeded variation so one changing trait does not rearrange the habitat.
 - [x] Add leaf sway, firefly travel, and pond ripples through embedded CSS; add complete static and reduced-motion states.
-- [ ] Implement `validate.py` for XML structure, prohibited content/references, escaped text, and the agreed size/element/animation budgets.
+- [x] Implement `validate.py` for XML structure, prohibited content/references, escaped text, and the agreed size/element/animation budgets; see [SVG validation verification](../notes/svg-validation-verification.md).
 - [ ] Render the fixture gallery through HTML image elements and capture each persona at narrow and wide widths on light/dark host backgrounds.
 
 Acceptance: all five metrics create understandable differences, every stage is complete, and reduced motion retains the same scene.

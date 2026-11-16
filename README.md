@@ -9,7 +9,7 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The paper-cut SVG renderer and bounded ambient motion are available as a Python API; the full browser gallery, bundle validation, and publication remain planned.
+The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs; the full browser gallery, bundle validation, and publication remain planned.
 No generated image publication or daily workflow is available at this stage.
 
 ## Run the collection probe
@@ -120,6 +120,26 @@ The fixed banner above previews the reference artwork; it is separate from gener
 The renderer alone does not establish full browser compatibility or approval of its generated scenes; those remain gallery and operator-review gates.
 See [paper-cut port verification](docs/notes/papercut-renderer-verification.md) for the checked scope and remaining limits.
 See [motion verification](docs/notes/motion-verification.md) for the tested fallback behavior and reduced-motion browser setup.
+
+## Validate a rendered SVG
+
+`validate_svg(raw)` accepts current generator-format UTF-8 SVG bytes and returns `None`, or raises `ValueError` without rewriting the image.
+It checks XML, the closed element/attribute/CSS vocabulary, typed internal references, finite geometry, structural identity/date metadata, and the 200 KiB / 1,200-element / 40-animation limits.
+DTD/entities, processing instructions, external resources, reference cycles and excessive nesting/reuse are rejected offline.
+Only the renderer's exact ambient stylesheet or complete CSS absence is supported; arbitrary SVG/CSS is outside this API.
+
+```bash
+python - <<'PYTHON'
+from github_terrarium.validate import MAX_BYTES, validate_svg
+
+with open("terrarium-preview.svg", "rb") as stream:
+    validate_svg(stream.read(MAX_BYTES + 1))
+PYTHON
+```
+
+Call this API explicitly; `render` does not invoke it automatically.
+Bundle/state/manifest validation and a validation CLI remain planned.
+See [SVG validation verification](docs/notes/svg-validation-verification.md) for negative-fixture coverage and limits.
 
 ## Planned experience
 
