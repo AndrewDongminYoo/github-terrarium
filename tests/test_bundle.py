@@ -159,6 +159,26 @@ class ValidateTests(unittest.TestCase):
         with patch.object(bundle, "SUPPORTED_RENDERERS", {3, 4}):
             self.assertRejects(files, "renderer_version does not match SVG")
 
+    def test_swapped_svg_must_match_state(self):
+        files = built()
+        quiet = snapshot(prs=1)
+        for day in sorted(quiet["days"])[-7:]:
+            quiet["days"][day]["prs"] = 0
+        renamed = snapshot(prs=1)
+        renamed["subject"]["login"] = "hubot"
+        for name, source in [
+            ("stage", snapshot(prs=5)),
+            ("motion", quiet),
+            ("login", renamed),
+            ("date", snapshot(end=date(2026, 11, 16), prs=1)),
+        ]:
+            with self.subTest(differs=name):
+                other = build_files(advance(source), COMMIT)[SVG]
+                self.assertNotEqual(other, files[SVG])
+                self.assertRejects(
+                    with_file(files, SVG, other), "SVG stage, motion, login, or date"
+                )
+
     def test_non_canonical_state_is_rejected(self):
         files = built()
         compact = json.dumps(json.loads(files[STATE])).encode()

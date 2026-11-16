@@ -10,8 +10,9 @@ import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from .growth import stage
 from .models import canonical_json, fields, identifier, iso_day
-from .render import RENDERER_VERSION, render
+from .render import RENDERER_VERSION, _motion_mode, render
 from .state import MAX_BYTES as STATE_MAX_BYTES
 from .state import unique_object, validate_state
 from .validate import MAX_BYTES as SVG_MAX_BYTES
@@ -133,6 +134,20 @@ def validate_files(files):
     root = ET.fromstring(files[SVG])
     if root.get("data-renderer-version") != str(manifest["renderer_version"]):
         raise ValueError("Manifest renderer_version does not match SVG")
+    xp = sum(
+        d["activity_xp_awarded"] + d["popularity_xp_awarded"]
+        for d in state["days"].values()
+    )
+    # validate_svg guarantees the root's last child is the three-label
+    # identity group: login, activity date, and stage.
+    labels = [node.text for node in root[-1]]
+    if (
+        root.get("data-stage") != stage(xp)
+        or root.get("data-motion") != _motion_mode(state)
+        or labels[0] != f"{state['subject']['login']} / terrarium"
+        or labels[1] != f"Activity through {state['last_complete_activity_day']} UTC"
+    ):
+        raise ValueError("SVG stage, motion, login, or date does not match state")
     return manifest
 
 
