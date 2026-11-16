@@ -9,8 +9,8 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle; the full browser gallery and publication remain planned.
-No generated image publication or daily workflow is available at this stage.
+The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, and a low-level `publish` command pushes a validated bundle to the `output` branch; the full browser gallery, conflict recollection, and the daily workflow remain planned.
+No scheduled generation is available at this stage.
 
 ## Run the collection probe
 
@@ -73,7 +73,7 @@ cmp state.json next-state.json
 ```
 
 Use a separate destination from the input state so shell redirection cannot truncate the prior state.
-Once publication exists, bootstrap will additionally require an absent remote output branch; this local command alone does not authorize a remote reset.
+Publishing a bootstrap additionally requires an absent remote output branch and an explicit `publish --bootstrap`; this local command alone does not authorize a remote reset.
 For normal updates, collect from the earlier of today minus 30 days and the day after `last_complete_activity_day`, ending at today's UTC date exclusively.
 The snapshot must cover exactly that interval, with no unknown days; an interval over 90 days requires explicit recovery.
 
@@ -100,7 +100,7 @@ The `render(state)` Python API accepts a validated growth state and returns dete
 It reuses the existing stages and normalized traits, with stable subject-ID-based anchors and bounded object slots.
 Embedded CSS adds leaf sway, firefly travel, and pond ripples; after seven completed UTC days with no eligible PR, review, or issue activity, motion becomes calmer without changing earned growth or geometry.
 Reduced motion disables every ambient animation and transition, and disabled CSS leaves the complete static scene visible.
-The `build` command below renders through this API; publication is not included yet.
+The `build` command below renders through this API, and `publish` pushes the resulting bundle.
 
 ```bash
 python - <<'PYTHON'
@@ -157,6 +157,26 @@ Other files in the directory are never touched.
 `validate` checks the three files without modifying them.
 The [technical design](docs/specs/architecture.md#atomic-publication) defines the manifest keys and the validation rules.
 
+## Publish a bundle
+
+`publish` revalidates a bundle and pushes it to the `output` branch with one commit whose parent is the expected remote head; the push is leased on that head, so it fast-forwards or fails as a conflict and never rewrites history.
+
+```bash
+python -m github_terrarium publish --bundle-dir bundle --repository AndrewDongminYoo/github-terrarium --expected-parent absent --bootstrap
+python -m github_terrarium publish --bundle-dir bundle --repository AndrewDongminYoo/github-terrarium --expected-parent "$(git ls-remote https://github.com/AndrewDongminYoo/github-terrarium.git refs/heads/output | cut -f1)"
+```
+
+It builds the commit in a temporary bare Git directory, so the current checkout's branch, index, worktree, and configuration are never read or changed.
+Only `terrarium.svg`, `state.json`, and `manifest.json` change; every other path on `output` is preserved, and extra files in the bundle directory are ignored.
+A new root commit requires both `--expected-parent absent` and `--bootstrap`, and `--bootstrap` fails when the branch exists.
+An existing branch must hold a valid bundle for the same subject, and the candidate's activity and popularity dates must not move backwards; a candidate with an unfinished recovery cutoff is refused.
+When all three files are byte-identical to the parent, nothing is pushed and the result reports `no-change`.
+After a push, a fresh fetch must show the new commit as the remote head with matching file hashes before `published` is reported.
+The token comes only from `GH_TOKEN` or `GITHUB_TOKEN` and reaches Git through environment-scoped configuration, never through arguments, remote URLs, or commits; `--remote URL` overrides the default `https://github.com/OWNER/NAME.git` for local tests.
+Success prints a canonical JSON result; failures exit 1 with no stdout, a remote head that differs from the expected parent or a rejected push exits 3, and usage errors exit 2.
+A failed readback after a successful push exits 1 and names the pushed commit.
+Fetching fresh data and retrying after a conflict is not implemented yet.
+
 ## Planned experience
 
 - A personal terrarium with a stable layout that grows over time.
@@ -195,8 +215,8 @@ main
 └── tools/            # authoring-time asset extraction
 ```
 
-The planned `output` branch will contain `terrarium.svg`, `state.json`, and `manifest.json`.
-It will be created by the first validated publication, not by this documentation bootstrap.
+The planned `output` branch will contain `terrarium.svg`, `state.json`, and `manifest.json` at its root.
+It will be created by the first validated `publish --bootstrap`, not by this documentation bootstrap.
 The planned default schedule is 00:23 UTC each day (09:23 Asia/Seoul), subject to GitHub scheduling delays.
 
 ## License

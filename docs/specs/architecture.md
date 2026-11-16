@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, and offline bundle build/validation are implemented; publication remains planned.
+Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, offline bundle build/validation, and single-attempt output publication are implemented; the scheduled workflow and conflict recollection remain planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -59,7 +59,7 @@ output/
 └── manifest.json
 ```
 
-`publish.py`, `generate.yml`, and the `output` branch are planned (not implemented); the other source paths exist.
+`generate.yml` and a live `output` branch are planned (not implemented); the other source paths exist.
 Keep output files at the branch root so the embedding URL remains stable.
 Do not implement a configurable output branch in v1; use `output` consistently.
 
@@ -74,15 +74,15 @@ The implemented diagnostic command is `python -m github_terrarium probe`; it ret
 It does not produce a normalized growth snapshot or write state.
 The implemented `collect --start DATE [--end DATE] [--expected-subject ID]` command emits a validated snapshot to stdout, with the same configuration/repository flags as `probe`.
 The offline `build --snapshot FILE (--state FILE | --bootstrap) --bundle-dir DIR --source-commit SHA` command reconciles growth, writes a validated three-file bundle, and prints its manifest; `validate --bundle-dir DIR` re-checks an existing bundle and prints its manifest.
-The planned `publish` command requires the expected remote parent SHA.
+The `publish --bundle-dir DIR --repository OWNER/NAME --expected-parent SHA|absent [--bootstrap] [--remote URL]` command publishes a validated bundle; `absent` requires `--bootstrap` and `--bootstrap` requires `absent`.
 The caller can save `collect` output to a temporary file; `build` reads that snapshot and prior state.
 The local `grow --bootstrap` command requires exactly 30 completed days and no supplied prior state.
-The future publisher must additionally prove the remote output branch does not exist before bootstrap publication.
+`publish --bootstrap` additionally proves the remote output branch does not exist; a failed branch lookup is a failure, not an absent branch.
 Offline builds require an explicit fixture date and never contact GitHub.
 Routine runs use the current UTC date; historical recovery must not fabricate past popularity snapshots.
-Failures return exit status 1 with sanitized diagnostics; usage errors return 2.
+Failures return exit status 1 with sanitized diagnostics; usage errors return 2; a publish conflict returns 3.
 The offline `grow --snapshot FILE` command requires either `--state FILE` or `--bootstrap`, accepts optional `--recover-through DATE`, and prints a validated candidate state.
-Future publish flags remain milestone 5 work.
+`--remote` overrides the default `https://github.com/OWNER/NAME.git` remote for local bare-remote tests.
 
 ## Collection and normalization
 
@@ -232,13 +232,27 @@ It does not re-render the SVG; a renderer version change must decide explicitly 
 The three replacements are not atomic as a set; validation detects a torn bundle through its hashes.
 Do not embed the output commit's own SHA or a wall-clock generation timestamp in its contents.
 Serialize the same logical inputs identically; byte-identical bundles produce no commit.
-Commit all three files together and perform an ordinary, non-forced push whose parent is the fetched output head.
+Commit all three files together and push a commit whose parent is the fetched output head, leased on that head so the update is only a fast-forward or a branch creation and never rewrites history.
 
 Use workflow concurrency group `terrarium-output` with cancellation disabled to serialize automated publishers.
 A concurrent external update may still reject a push: fetch the new head, discard the old collection snapshot, collect fresh data against the new state's required interval, revalidate and rebuild, then retry once.
 Recollection is required even when both publishers ran on the same UTC day, because day labels alone cannot order their observations.
 Never transplant a state delta or overwrite a newer head; a second rejection fails with the previous remote bundle intact.
 Read back the remote commit and manifest hashes after a successful push before reporting publication success.
+
+`publish.py` implements one publication attempt.
+It revalidates the candidate bundle, rejects a candidate state with a non-null `recovery_target`, and looks up `refs/heads/output` with `ls-remote`.
+All Git calls run in a temporary bare repository with inherited `GIT_*` variables, system and global configuration, and terminal prompts disabled.
+A token from `GH_TOKEN` or `GITHUB_TOKEN` is passed only as an environment-scoped `http.https://github.com/.extraheader`.
+The push carries `--force-with-lease=refs/heads/output:<expected parent>`, or an empty lease for a bootstrap, so a head moved, rewound, or deleted after the lookup rejects the push; the new commit always descends from the expected parent, so an accepted push is a fast-forward or a branch creation.
+A head different from `--expected-parent`, before or during the fetch, or a push rejected by the lease or as non-fast-forward is a conflict with exit status 3; a hook or protection rejection is an ordinary failure.
+An existing output commit must hold the three owned paths as regular files that validate as a bundle for the same subject, with candidate activity and popularity dates no earlier than its state's dates.
+The candidate state must keep that state's growth at equal or later dates: it requires every existing day and repository watermark with no award, popularity unit, or watermark lowered, because a same-day re-run may raise stars or correct activity counts.
+The commit replaces only the three owned root entries, keeps every other root entry by object ID, and uses a fixed `github-terrarium` identity without signing.
+Byte-identical owned files produce `no-change` with no commit or push.
+Readback uses a second fresh temporary repository; a head or hash mismatch after a successful push exits 1 and names the pushed commit.
+The success result is canonical JSON with `commit`, `outcome` (`published` or `no-change`), `parent` (null for a bootstrap), and `sha256` of all three files.
+Recollection and the single retry after a conflict belong to the orchestration layer and are not implemented yet.
 
 ## GitHub Actions boundary
 

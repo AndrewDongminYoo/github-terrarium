@@ -1,4 +1,4 @@
-"""Collection, offline growth, and bundle commands; no output branch mutations."""
+"""Collection, offline growth, bundle, and output-branch publication commands."""
 
 import argparse
 import os
@@ -13,6 +13,7 @@ from .growth import advance
 from .models import canonical_json
 from .normalize import collect
 from .probe import probe
+from .publish import PublishConflict, expected_parent, publish, repository
 from .state import read_json, validate_state
 
 
@@ -64,8 +65,31 @@ def main(argv=None):
         "validate", help="Validate an existing three-file output bundle"
     )
     command.add_argument("--bundle-dir", type=Path, required=True)
+    command = commands.add_parser(
+        "publish", help="Publish a bundle to the output branch without force"
+    )
+    command.add_argument("--bundle-dir", type=Path, required=True)
+    command.add_argument("--repository", type=repository, required=True)
+    command.add_argument("--expected-parent", type=expected_parent, required=True)
+    command.add_argument("--bootstrap", action="store_true")
+    command.add_argument("--remote", help="Override the GitHub remote URL")
     args = parser.parse_args(argv)
+    if args.command == "publish" and (args.expected_parent == "absent") != (
+        args.bootstrap
+    ):
+        parser.error("--bootstrap requires --expected-parent absent and vice versa")
     try:
+        if args.command == "publish":
+            result = publish(
+                args.bundle_dir,
+                args.repository,
+                args.expected_parent,
+                bootstrap=args.bootstrap,
+                remote=args.remote,
+                token=os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"),
+            )
+            print(canonical_json(result), end="")
+            return 0
         if args.command == "build":
             previous = (
                 validate_state(read_json(args.state))
@@ -108,6 +132,9 @@ def main(argv=None):
                 client,
                 expected_subject=args.expected_subject,
             )
+    except PublishConflict as error:
+        print(f"conflict: {error}", file=sys.stderr)
+        return 3
     except (ValueError, OSError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
