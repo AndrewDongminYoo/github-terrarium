@@ -1,7 +1,6 @@
 # GitHub Terrarium Implementation Plan
 
-Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, and offline output-bundle build/validation implemented; the reviewed browser gallery and publication work are next.
-Future publish flags remain deferred to their implementation milestone.
+Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, offline output-bundle build/validation, and single-attempt output publication implemented; the reviewed browser gallery and conflict recollection are next.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
 The initial documentation bootstrap is complete; runtime implementation has started.
@@ -75,11 +74,11 @@ Traceability: AC-01, AC-07, AC-08, and AC-09.
 
 ## Milestone 5: safe output-branch publication
 
-- [ ] Implement `publish.py` using an isolated temporary Git directory or Git plumbing, without changing the source checkout's branch or staging unrelated files.
-- [ ] Read the expected remote output parent, distinguish absent branch from missing state, and prepare all three generated files with canonical serialization and a hash manifest.
-- [ ] Create one commit per changed bundle, skip byte-identical output, and preserve unrelated paths on an existing output branch.
+- [x] Implement `publish.py` using an isolated temporary Git directory or Git plumbing, without changing the source checkout's branch or staging unrelated files.
+- [x] Read the expected remote output parent, distinguish absent branch from missing state, and prepare all three generated files with canonical serialization and a hash manifest.
+- [x] Create one commit per changed bundle, skip byte-identical output, and preserve unrelated paths on an existing output branch.
 - [ ] Push without force; on a changed remote head, fetch, discard the old snapshot, recollect, rebuild from the new state, and retry once, including same-day conflicts.
-- [ ] Read back the published commit and hashes before reporting success.
+- [x] Read back the published commit and hashes before reporting success.
 
 Acceptance: a remote reader sees either the prior complete bundle or the new complete bundle, and source files never enter `output` accidentally.
 Verification: local bare-remotes covering first publication, no change, normal growth, missing/corrupt state, untracked source files, unrelated output paths, same-day stale-snapshot conflicts, backwards snapshot dates, retry exhaustion, and post-push readback failure.
