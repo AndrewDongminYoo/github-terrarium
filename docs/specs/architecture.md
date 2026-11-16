@@ -166,12 +166,14 @@ Validate the subject, date continuity, nonnegative integer counts, null-day rule
 ## Rendering contract
 
 `github_terrarium.render.render(state)` implements the scene with embedded ambient CSS and returns UTF-8 SVG bytes after existing state validation.
-Renderer version 2 uses the original primitives in `assets/terrarium/botanical.svg`, packaged as `github_terrarium.art` so installed wheels do not require a source checkout.
+Renderer version 3 assembles the container-free paper-cut pieces in `assets/terrarium/papercut.svg`, packaged as `github_terrarium.art` so installed wheels do not require a source checkout.
+The authoring-time extractor derives named vector pieces from the unchanged reference; runtime code loads only the packaged definitions, supplies live identity/date labels, and selects geometry from state.
+Five permanent stage scales expand the tree and roots independently of recent activity; PRs add canopy pieces, forks add branches and seedlings, stars add flowers/fireflies, reviews enrich the pond, and issues add mushrooms/ground cover.
 Fixed feature salts and named anchors isolate trait changes; exact slot limits are declared in `render.py`.
 The renderer adds no CLI command; independent SVG validation, full browser-gallery evidence, and final visual approval remain follow-up work.
 Motion uses separate nested groups so disabling CSS animation preserves each outer placement transform.
 The last seven completed UTC activity days select active or calm keyframes; stock counts do not select the mode, and neither mode changes state or geometry.
-Main leaves, fireflies, and ripple slots total at most 38 independently animated groups; phases are derived from independent subject-ID salts.
+Main and additional canopy pieces, fireflies, and ripple slots total at most 33 independently animated groups; phases are derived from independent subject-ID salts.
 Reduced-motion CSS removes all ambient animations and transitions, retaining the complete base pose.
 
 Render SVG primitives, groups, paths, gradients, clip paths, and internal reusable symbols.

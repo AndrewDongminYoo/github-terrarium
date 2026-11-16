@@ -11,33 +11,35 @@ from .growth import stage, traits
 from .models import iso_day
 from .state import validate_state
 
-RENDERER_VERSION = 2
-# Maximum optional objects, independent of unbounded activity/stock counts.
+RENDERER_VERSION = 3
 SLOTS = {
     "branches": 6,
-    "cover": 12,
+    "cover": 8,
     "creatures": 4,
     "fireflies": 8,
-    "flowers": 12,
-    "leaves": 8,
+    "flowers": 10,
+    "leaves": 6,
     "mushrooms": 9,
     "ripples": 6,
     "seedlings": 6,
 }
+# Permanent development is independent of the recent trait counts.
 STAGES = {
-    "seed": (30, 2),
-    "sprout": (65, 4),
-    "grove": (104, 8),
-    "mature": (142, 12),
-    "sanctuary": (174, 16),
+    "seed": (0.18, 2),
+    "sprout": (0.32, 4),
+    "grove": (0.55, 7),
+    "mature": (0.8, 10),
+    "sanctuary": (1, 13),
 }
-ANCHORS = {"plant": (430, 254), "pond": (620, 267)}
+ANCHORS = {"plant": (604, 268), "pond": (230, 265)}
+CANOPY_CENTERS = [(500, 100), (590, 70), (380, 125), (680, 115), (610, 130), (440, 115)]
+EXTRA_CANOPY = [(350, 171), (430, 170), (490, 155), (555, 160), (660, 150), (700, 190)]
 
 
 MOTION_CSS = """
 .ambient { transform-box: fill-box; transform-origin: center; }
 .leaf-sway {
-  transform-origin: left bottom; animation: leaf-sway 7s ease-in-out infinite;
+  transform-origin: center bottom; animation: leaf-sway 7s ease-in-out infinite;
 }
 .firefly-travel { animation: firefly-travel 11s ease-in-out infinite; }
 .pond-ripple { animation: pond-ripple 8s ease-in-out infinite; }
@@ -106,10 +108,6 @@ def _slots(value, name):
     return math.ceil(value * SLOTS[name])
 
 
-def _use(parent, name, x, y, width, height):
-    return _node(parent, "use", href=f"#{name}", x=x, y=y, width=width, height=height)
-
-
 def _motion(parent, subject, family, index):
     # CSS transforms act on a child, preserving the parent's placement in all modes.
     delay = 12 * _variation(subject, "motion-" + family, index)
@@ -128,20 +126,42 @@ def _motion_mode(state):
     return "active" if active else "calm"
 
 
-def render(state):
-    """Return canonical UTF-8 SVG bytes without mutating the validated state.
+def _fragment(parent, fragment, **attributes):
+    return _node(parent, "use", href=f"#{fragment}", **attributes)
 
-    Logical dates select active or calm ambient motion. Static base geometry
-    remains complete with disabled CSS or prefers-reduced-motion: reduce.
+
+def _growth_transform(scale):
+    x, y = ANCHORS["plant"]
+    return f"translate({x} {y}) scale({scale}) translate({-x} {-y})"
+
+
+def _placed_piece(parent, subject, feature, index, fragment, target, origin, scale=1):
+    pose = _position(subject, feature, index, *target)
+    group = _node(
+        parent,
+        "g",
+        id=f"{feature}-{index}",
+        transform=f"{pose} scale({scale}) translate({-origin[0]} {-origin[1]})",
+    )
+    _fragment(group, fragment)
+    return group
+
+
+def render(state):
+    """Assemble a bounded paper-cut habitat from validated, explicit state.
+
+    Native vector pieces are packaged resources, not a baked background image.
+    Growth and recent traits select geometry; browser time only drives ambient CSS.
     """
     validate_state(state)
     subject = state["subject"]
     normalized = traits(state["current_traits"])
     xp = sum(
-        day["activity_xp_awarded"] + day["popularity_xp_awarded"]
-        for day in state["days"].values()
+        d["activity_xp_awarded"] + d["popularity_xp_awarded"]
+        for d in state["days"].values()
     )
     growth_stage = stage(xp)
+    scale, canopy_count = STAGES[growth_stage]
     root = ET.Element(
         "svg",
         {
@@ -149,6 +169,7 @@ def render(state):
             "viewBox": "0 0 900 360",
             "role": "img",
             "aria-labelledby": "scene-title scene-desc",
+            "data-art": "papercut",
             "data-stage": growth_stage,
             "data-renderer-version": str(RENDERER_VERSION),
             "data-motion": _motion_mode(state),
@@ -158,170 +179,46 @@ def render(state):
         root, "title", id="scene-title"
     ).text = f"{subject['login']}'s GitHub terrarium"
     _node(root, "desc", id="scene-desc").text = (
-        f"A {growth_stage} habitat for public GitHub user {subject['id']}. "
+        f"A {growth_stage} paper-cut habitat for public GitHub user {subject['id']}. "
         f"Activity complete through {state['last_complete_activity_day']} UTC. "
         "Stars bring flowers and fireflies; forks add branches and seedlings; "
-        "pull requests add leaves; reviews enrich the pond; issues add mushrooms."
+        "Pull requests enrich the canopy; reviews enrich the pond; "
+        "issues add mushrooms."
     )
     _node(root, "style").text = MOTION_CSS
     asset = ET.fromstring(
-        files("github_terrarium.art").joinpath("botanical.svg").read_bytes()
+        files("github_terrarium.art").joinpath("papercut.svg").read_bytes()
     )
-    definitions = copy.deepcopy(asset[0])
+    definitions = copy.deepcopy(next(n for n in asset if n.tag.endswith("}defs")))
     for node in definitions.iter():
         node.tag = node.tag.removeprefix("{http://www.w3.org/2000/svg}")
     root.append(definitions)
     background = _node(root, "g", id="background")
-    _node(background, "rect", width=900, height=360, fill="#f4f0e5")
-    _node(
-        background,
-        "ellipse",
-        cx=450,
-        cy=299,
-        rx=350,
-        ry=17,
-        fill="#d7d6c2",
-        opacity="0.55",
-    )
-    vessel = _node(root, "g", id="vessel")
-    bowl = "M177 56H723L777 232Q796 295 725 300H175Q104 295 123 232Z"
-    _node(
-        vessel,
-        "path",
-        d=bowl,
-        fill="url(#glass-tint)",
-        stroke="#a1b6a8",
-        stroke_width="2",
-    )
-    _node(
-        vessel,
-        "path",
-        d="M177 56Q450 42 723 56Q450 70 177 56Z",
-        fill="#e2e8d7",
-        stroke="#a1b6a8",
-        stroke_width="2",
-    )
-    _node(
-        vessel,
-        "path",
-        d="M163 138L140 220M151 129L147 145M735 121L765 223",
-        fill="none",
-        stroke="#ffffff",
-        stroke_width="4",
-        opacity="0.65",
-        stroke_linecap="round",
-    )
-    soil = _node(root, "g", id="soil")
-    _node(
-        soil,
-        "path",
-        d="M129 254Q450 238 771 254Q776 296 725 300H175Q124 296 129 254Z",
-        fill="#715a43",
-    )
-    _node(
-        soil,
-        "path",
-        d="M132 270Q450 257 768 270L763 280Q450 266 137 281Z",
-        fill="#a08862",
-    )
-    _node(
-        soil,
-        "path",
-        d="M130 253Q450 237 770 253L768 263Q450 248 132 263Z",
-        fill="#8e9970",
-    )
-    for index in range(16):
-        pebble = _node(
-            soil,
-            "g",
-            transform=_position(subject, "soil", index, 160 + index * 38, 284),
-        )
-        _node(pebble, "ellipse", rx="3", ry="1.5", fill="#c3aa7b")
-
-    plant = _node(
-        root, "g", id="plant", transform="translate(%s %s)" % ANCHORS["plant"]
-    )
-    height, leaves = STAGES[growth_stage]
-    _node(plant, "ellipse", cx=0, cy=1, rx=10, ry=4, fill="#b69a60")
-    _node(
-        plant,
-        "path",
-        d=f"M0 0Q-12 {-height // 2} 0 {-height}",
-        fill="none",
-        stroke="#496748",
-        stroke_width="4",
-        stroke_linecap="round",
-    )
-    for index in range(leaves + _slots(normalized["prs"], "leaves")):
-        # Each leaf has a fixed slot. Extra PR leaves do not shift existing ones.
-        y = -18 - (index % leaves) * (height - 18) / max(1, leaves - 1)
-        if index >= leaves:
-            y = -height * (index - leaves + 0.5) / SLOTS["leaves"]
-        side = -1 if index % 2 == 0 else 1
-        leaf = _node(
-            plant,
-            "g",
-            id=f"plant-leaf-{index}",
-            transform=(
-                _position(subject, "leaf", index, side * 2, round(y, 2))
-                + f" scale({side} 1) rotate(-18)"
-            ),
-        )
-        _use(_motion(leaf, subject, "leaf-sway", index), "leaf", 0, -16, 35, 18)
-    branches = _node(
-        root, "g", id="branches", transform="translate(%s %s)" % ANCHORS["plant"]
-    )
-    for index in range(_slots(normalized["forks"], "branches")):
-        side = -1 if index % 2 == 0 else 1
-        branch = _node(
-            branches,
-            "g",
-            id=f"branch-{index}",
-            transform=_position(subject, "branch", index, 0, 0),
-        )
-        _node(
-            branch,
-            "path",
-            d=f"M0 0Q{side * 33} {-24 - index * 9} {side * 60} {-44 - index * 10}",
-            fill="none",
-            stroke="#698350",
-            stroke_width="2.5",
-        )
-        leaf = _node(
-            branch,
-            "g",
-            transform=f"translate({side * 60} {-44 - index * 10}) scale({side} 1)",
-        )
-        _use(leaf, "leaf", 0, -16, 28, 16)
-
-    pond = _node(root, "g", id="pond", transform="translate(%s %s)" % ANCHORS["pond"])
-    _node(pond, "ellipse", rx=91, ry=20, fill="#bdb58c")
-    _node(pond, "ellipse", cy=-2, rx=82, ry=15, fill="url(#pond-water)")
-    _node(
-        pond,
-        "path",
-        d="M-56 -6Q-19 -17 38 -9",
-        fill="none",
-        stroke="#d3e4c9",
-        stroke_width="2",
-        opacity="0.75",
-    )
+    _node(background, "rect", width=900, height=360, fill="#f8dc8c")
+    world = _node(root, "g", clip_path="url(#inside)")
+    landscape = _node(world, "g", id="landscape-view")
+    _fragment(landscape, "landscape")
+    pond = _node(world, "g", id="pond")
+    _fragment(pond, "water")
+    if normalized["reviews"]:
+        _fragment(pond, "pond-lilies")
     for index in range(_slots(normalized["reviews"], "ripples")):
         ripple = _node(
             pond,
             "g",
             id=f"ripple-{index}",
             transform=_position(
-                subject, "ripple", index, -56 + index * 21, -1 + index % 2 * 5
+                subject, "ripple", index, 162 + index * 28, 263 + index % 2 * 5
             ),
         )
         _node(
             _motion(ripple, subject, "pond-ripple", index),
             "ellipse",
-            rx=8,
-            ry=2,
+            rx=12,
+            ry=2.4,
             fill="none",
-            stroke="#d0dfbc",
+            stroke="#b8dcd3",
+            stroke_width="0.9",
         )
     for index in range(_slots(normalized["reviews"], "creatures")):
         creature = _node(
@@ -329,86 +226,165 @@ def render(state):
             "g",
             id=f"creature-{index}",
             transform=_position(
-                subject, "creature", index, -40 + index * 25, -4 + index % 2 * 7
+                subject, "creature", index, 180 + index * 35, 262 + index % 2 * 6
             ),
         )
-        _use(creature, "pond-creature", -10, -5, 20, 10)
+        _node(creature, "path", d="M-8 0Q0 -5 7 0Q0 5 -8 0L-11 -3V3Z", fill="#eedcb0")
 
-    ground = _node(root, "g", id="ground")
-    for index in range(8 + _slots(normalized["issues"], "cover")):
-        cover = _node(
+    ground = _node(world, "g", id="ground")
+    rocks = _node(ground, "g", transform=_position(subject, "rocks", 0, 0, 0))
+    for fragment in ("rocks", "cattails", "fern-side"):
+        _fragment(rocks, fragment)
+    for index in range(_slots(normalized["issues"], "cover")):
+        _placed_piece(
             ground,
-            "g",
-            id=f"cover-{index}",
-            transform=_position(
-                subject, "cover", index, 163 + index * 28, 252 + index % 3 * 3
-            ),
+            subject,
+            "cover",
+            index,
+            "fern-side",
+            (365 + index * 49, 274 - min(index, 4) * 3),
+            (716, 246),
+            0.45,
         )
+
+    # Fork branches are independent of canopy slots, and point toward the light.
+    branches = _node(world, "g", id="branches", transform=_growth_transform(scale))
+    for index in range(_slots(normalized["forks"], "branches")):
+        y = 240 - index * 14
+        x = 500 - index % 3 * 28
+        shape_id = f"fork-outline-{index}"
         _node(
-            cover,
+            definitions,
             "path",
+            id=shape_id,
             d=(
-                "M0 2Q-12 -14 -15 -10Q-4 -7 0 2Q-1 -17 5 -19"
-                "Q7 -8 0 2Q12 -12 15 -8Q9 -5 0 2Z"
+                f"M600 {y}Q550 {y - 8} {x} {y - 31}L{x} {y - 34}"
+                f"Q554 {y - 12} 600 {y - 5}Z"
             ),
-            fill="#71885a",
         )
-    for feature, metric, symbol in (
-        ("seedlings", "forks", "seedling"),
-        ("flowers", "stars", "flower"),
-        ("mushrooms", "issues", "mushroom"),
+        branch = _node(branches, "g", id=f"branch-{index}")
+        _fragment(
+            branch,
+            shape_id,
+            fill="#22301f",
+            opacity="0.26",
+            transform="translate(2.2 3)",
+        )
+        _fragment(branch, shape_id, fill="#463525")
+    plant = _node(world, "g", id="plant", transform=_growth_transform(scale))
+    for index in range(canopy_count // 2):
+        _fragment(plant, f"canopy-back-{index % 6}")
+    _fragment(plant, "tree-trunk")
+    for index in range(canopy_count):
+        leaf = _node(
+            plant,
+            "g",
+            id=f"canopy-slot-{index}",
+            transform=_position(subject, "canopy", index, 0, 0),
+        )
+        _fragment(_motion(leaf, subject, "leaf-sway", index), f"canopy-{index}")
+    for index in range(_slots(normalized["prs"], "leaves")):
+        x, y = CANOPY_CENTERS[index]
+        extra = _node(
+            plant,
+            "g",
+            id=f"extra-canopy-{index}",
+            transform=(
+                _position(subject, "extra-canopy", index, *EXTRA_CANOPY[index])
+                + f" scale(0.55) translate({-x} {-y})"
+            ),
+        )
+        _fragment(_motion(extra, subject, "leaf-sway", index + 13), f"canopy-{index}")
+
+    seedlings = _node(world, "g", id="seedlings")
+    for index, (x, y) in enumerate(
+        [(110, 278), (370, 276), (430, 275), (500, 268), (745, 263), (810, 263)]
     ):
-        group = _node(root, "g", id=feature)
-        for index in range(_slots(normalized[metric], feature)):
-            x = {"seedlings": 215, "flowers": 172, "mushrooms": 220}[feature]
-            spacing = {"seedlings": 47, "flowers": 33, "mushrooms": 34}[feature]
-            y = 251 - index % 3 * 6
-            item = _node(
-                group,
-                "g",
-                id=f"{feature}-{index}",
-                transform=_position(subject, feature, index, x + index * spacing, y),
-            )
-            if feature == "flowers":
-                _node(
-                    item,
-                    "path",
-                    d="M0 4Q-6 -15 0 -28",
-                    fill="none",
-                    stroke="#71885a",
-                    stroke_width="2",
-                )
-                _use(item, symbol, -10, -39, 20, 20)
-            elif feature == "seedlings":
-                _use(item, symbol, -18, -32, 36, 38)
-            else:
-                _use(item, symbol, -14, -24, 28, 30)
-    fireflies = _node(root, "g", id="fireflies")
+        if index >= _slots(normalized["forks"], "seedlings"):
+            break
+        _placed_piece(
+            seedlings, subject, "seedling", index, "canopy-8", (x, y), (550, 112), 0.14
+        )
+    flowers = _node(world, "g", id="flowers")
+    for index in range(_slots(normalized["stars"], "flowers")):
+        flower = _node(
+            flowers,
+            "g",
+            id=f"flower-slot-{index}",
+            transform=_position(subject, "flower", index, 0, 0),
+        )
+        _fragment(flower, f"flower-{index}")
+    mushrooms = _node(world, "g", id="mushrooms")
+    targets = [
+        (668, 256),
+        (688, 256),
+        (652, 258),
+        (555, 261),
+        (520, 264),
+        (760, 262),
+        (480, 274),
+        (110, 278),
+        (360, 275),
+    ]
+    origins = [(668, 256), (688, 256), (652, 258)]
+    for index in range(_slots(normalized["issues"], "mushrooms")):
+        _placed_piece(
+            mushrooms,
+            subject,
+            "mushroom-slot",
+            index,
+            f"mushroom-{index % 3}",
+            targets[index],
+            origins[index % 3],
+        )
+    soil = _node(world, "g", id="soil")
+    _fragment(soil, "soil-cutaway")
+    roots = _node(world, "g", id="roots", transform=_growth_transform(scale))
+    _fragment(roots, "tree-roots")
+    for fragment in ("pebbles", "moss-rim", "ferns-front"):
+        _fragment(world, fragment)
+    fireflies = _node(world, "g", id="fireflies")
+    positions = [
+        (92, 96),
+        (176, 150),
+        (250, 104),
+        (132, 196),
+        (300, 196),
+        (218, 222),
+        (60, 150),
+        (780, 214),
+    ]
     for index in range(_slots(normalized["stars"], "fireflies")):
         item = _node(
             fireflies,
             "g",
             id=f"firefly-{index}",
-            transform=_position(
-                subject, "firefly", index, 232 + index * 61, 116 + index % 3 * 29
-            ),
+            transform=_position(subject, "firefly", index, *positions[index]),
         )
         motion = _motion(item, subject, "firefly-travel", index)
-        _node(motion, "circle", r=6, fill="#e8ca76", opacity="0.18")
-        _node(motion, "circle", r=2, fill="#c9a74c")
-    identity = _node(root, "g", id="identity", fill="#3c5146", font_family="serif")
-    label = _node(identity, "text", x=32, y=29, font_size=25)
+        _node(motion, "circle", r=8, fill="url(#glow)")
+        _node(motion, "circle", r=1.6, fill="#fffbe2")
+    _node(
+        root,
+        "rect",
+        x=0.5,
+        y=0.5,
+        width=899,
+        height=359,
+        rx=13.5,
+        fill="none",
+        stroke="#a9b08a",
+    )
+    identity = _node(root, "g", id="identity", fill="#3c4630", font_family="monospace")
+    label = _node(identity, "text", x=26, y=31, font_size=23)
     label.text = f"{subject['login']} / terrarium"
     if len(subject["login"]) > 20:
         label.set("textLength", "620")
         label.set("lengthAdjust", "spacingAndGlyphs")
     _node(
-        identity, "text", x=868, y=29, font_size=25, text_anchor="end"
-    ).text = growth_stage.capitalize()
-    _node(
-        identity, "text", x=32, y=337, font_size=25
+        identity, "text", x=26, y=54, font_size=18
     ).text = f"Activity through {state['last_complete_activity_day']} UTC"
     _node(
-        identity, "text", x=868, y=337, font_size=20, text_anchor="end"
-    ).text = "PUBLIC GITHUB ACTIVITY"
+        identity, "text", x=874, y=31, font_size=21, text_anchor="end"
+    ).text = growth_stage.capitalize()
     return ET.tostring(root, encoding="utf-8", short_empty_elements=True) + b"\n"

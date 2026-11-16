@@ -125,9 +125,9 @@ Keep artwork self-contained, without filters, scripts, or external images.
 
 The [Sanctuary paper-cut reference](../../assets/references/terrarium-papercut-sanctuary.svg) is the operator-supplied SVG created with Claude and retained unchanged from the supplied file.
 It defines the target composition and art treatment; its fixed login, dates, and stage are design-mockup labels, not collected activity or generated growth state.
-The reference is separate from packaged runtime assets and is not loaded by the current renderer.
-Renderer version 2 still uses the earlier vessel composition; adopting this direction requires low-activity and high-activity comparison scenes and a separate renderer implementation plan.
-Keeping the reference does not establish GitHub README playback or complete the fixture-gallery and visual-approval gates.
+The reference is separate from packaged runtime assets and is not loaded by the renderer.
+Renderer version 3 assembles extracted paper-cut pieces under the [port plan](../plans/2026-11-16-papercut-renderer.md), with low/high activity comparisons and state-driven stages and traits.
+The fixed reference banner was verified in the public repository README; this does not establish GitHub playback of generated output or complete the fixture-gallery and visual-approval gates.
 Source and artwork licensing remain subject to the release license decision.
 
 ### Scene format and motion
@@ -175,6 +175,6 @@ GitHub caching may delay the display of a new image; animation playback itself d
 ## Pending release decisions
 
 Select a repository license before the first reusable code/art release; public visibility is not a license choice.
-Validate the paper-cut direction across growth stages and activity personas through a rendered fixture gallery before adopting it in the renderer or expanding artwork.
+Review the generated paper-cut scenes across growth stages and activity personas with the operator before accepting the renderer port or expanding artwork.
 Calibrate scoring constants and performance budgets using the first implementation; change scoring only through a versioned migration decision.
 The architecture and implementation order are defined in [the technical design](architecture.md) and [the plan](../plans/implementation.md).
