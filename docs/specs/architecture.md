@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection, persistent growth, and ambient SVG rendering are implemented; bundle validation and publication remain planned.
+Status: v1 design; public collection, persistent growth, ambient SVG rendering, and standalone SVG validation are implemented; bundle validation and publication remain planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -27,12 +27,13 @@ Only the collector performs API reads; only the publisher performs remote writes
 Scoring and rendering are pure functions of explicit inputs.
 Read output data as untrusted structured data; never import code or execute scripts from the output branch.
 
-## Planned source layout
+## Source layout
 
 ```plaintext
 main/
 ├── pyproject.toml
 ├── terrarium.toml
+├── tools/extract_papercut_assets.py
 ├── src/github_terrarium/
 │   ├── __main__.py
 │   ├── config.py
@@ -44,6 +45,7 @@ main/
 │   ├── render.py
 │   ├── validate.py
 │   └── publish.py
+├── assets/references/
 ├── assets/terrarium/
 ├── tests/fixtures/
 └── .github/workflows/
@@ -56,7 +58,7 @@ output/
 └── manifest.json
 ```
 
-These are future paths, not files supplied by the documentation bootstrap.
+`publish.py`, `generate.yml`, and the `output` branch are planned (not implemented); the other source paths exist.
 Keep output files at the branch root so the embedding URL remains stable.
 Do not implement a configurable output branch in v1; use `output` consistently.
 
@@ -78,7 +80,7 @@ Offline builds require an explicit fixture date and never contact GitHub.
 Routine runs use the current UTC date; historical recovery must not fabricate past popularity snapshots.
 Failures return exit status 1 with sanitized diagnostics; usage errors return 2.
 The offline `grow --snapshot FILE` command requires either `--state FILE` or `--bootstrap`, accepts optional `--recover-through DATE`, and prints a validated candidate state.
-Future build/publish flags remain milestone 4–5 work.
+Future build/validate/publish flags remain milestone 5 work.
 
 ## Collection and normalization
 
