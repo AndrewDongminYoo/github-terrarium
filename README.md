@@ -1,12 +1,16 @@
 # GitHub Terrarium
 
+![Animated paper-cut terrarium design sample](assets/references/terrarium-papercut-sanctuary.svg)
+
+**Design preview:** This fixed animated SVG sample uses synthetic data and is not generated from live GitHub activity.
+
 A small living world shaped by your GitHub activity.
 Stars bring flowers and fireflies, forks spread seedlings, pull requests grow plants, reviews enrich a pond, and issues add mushrooms.
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
 The original SVG renderer and bounded ambient motion are available as a Python API; the full browser gallery, bundle validation, and publication remain planned.
-No published image or daily workflow is available at this stage.
+No generated image publication or daily workflow is available at this stage.
 
 ## Run the collection probe
 
