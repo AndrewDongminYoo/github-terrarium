@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection, persistent growth, ambient SVG rendering, and standalone SVG validation are implemented; bundle validation and publication remain planned.
+Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, and offline bundle build/validation are implemented; publication remains planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -44,6 +44,7 @@ main/
 │   ├── state.py
 │   ├── render.py
 │   ├── validate.py
+│   ├── bundle.py
 │   └── publish.py
 ├── assets/references/
 ├── assets/terrarium/
@@ -72,15 +73,16 @@ Use a stable SHA-256-derived seed from the subject node ID plus a fixed seed-ver
 The implemented diagnostic command is `python -m github_terrarium probe`; it returns first-page sample counts, explicit truncation flags, and `complete_snapshot: false`.
 It does not produce a normalized growth snapshot or write state.
 The implemented `collect --start DATE [--end DATE] [--expected-subject ID]` command emits a validated snapshot to stdout, with the same configuration/repository flags as `probe`.
-Planned pipeline commands are `build`, `validate`, and `publish` under `python -m github_terrarium`.
-The caller can save `collect` output to a temporary file; `build` reads that snapshot and prior state, `validate` inspects the complete bundle, and `publish` requires the expected remote parent SHA.
+The offline `build --snapshot FILE (--state FILE | --bootstrap) --bundle-dir DIR --source-commit SHA` command reconciles growth, writes a validated three-file bundle, and prints its manifest; `validate --bundle-dir DIR` re-checks an existing bundle and prints its manifest.
+The planned `publish` command requires the expected remote parent SHA.
+The caller can save `collect` output to a temporary file; `build` reads that snapshot and prior state.
 The local `grow --bootstrap` command requires exactly 30 completed days and no supplied prior state.
 The future publisher must additionally prove the remote output branch does not exist before bootstrap publication.
 Offline builds require an explicit fixture date and never contact GitHub.
 Routine runs use the current UTC date; historical recovery must not fabricate past popularity snapshots.
 Failures return exit status 1 with sanitized diagnostics; usage errors return 2.
 The offline `grow --snapshot FILE` command requires either `--state FILE` or `--bootstrap`, accepts optional `--recover-through DATE`, and prints a validated candidate state.
-Future build/validate/publish flags remain milestone 5 work.
+Future publish flags remain milestone 5 work.
 
 ## Collection and normalization
 
@@ -194,7 +196,7 @@ The validator must fail malicious or malformed SVG fixtures, not merely parse a 
 ## SVG validation contract
 
 `github_terrarium.validate.validate_svg(raw)` accepts current generator-format UTF-8 bytes unchanged and returns `None`, or raises `ValueError`.
-Call it explicitly after rendering; bundle validation, manifest checks and CLI integration remain separate planned work.
+Call it explicitly after rendering; `bundle.py` calls it for every built or validated bundle.
 The standard-library XML tree builder rejects DTDs and processing instructions and stops construction above 1,200 elements or depth 32; input above 200 KiB is rejected before parsing.
 No external entity, file, URL or socket resolver is installed.
 Only the SVG namespace and the generator's explicit element/attribute vocabulary are accepted; numeric geometry must be finite with absolute values at most 1,000,000.
@@ -220,6 +222,14 @@ Construct publication in a separate temporary Git directory or with Git plumbing
 Update only the three owned output paths and preserve unrelated existing paths; never stage the whole source tree.
 
 `manifest.json` records the subject ID, logical dates, schema/scoring/renderer versions, source commit, and SHA-256 hashes of `state.json` and `terrarium.svg`.
+Its exact keys are `manifest_version` (1), `subject_id`, `complete_activity_day`, `stock_observation_day`, `schema_version`, `scoring_version`, `renderer_version`, `source_commit` (a full lowercase 40-character SHA), and `sha256` with exactly `state.json` and `terrarium.svg` hashes of the raw file bytes.
+All three files use the canonical serialization: `state.json` and `manifest.json` are sorted-key, two-space-indented JSON with a final newline, and the SVG is the renderer's exact bytes.
+Bundle validation rejects missing or linked files, size overruns, unknown or missing keys, non-canonical JSON, hash mismatches, manifest values that differ from state, a renderer version outside the supported set or different from the SVG root, an SVG whose stage, motion mode, visible login, or visible activity date differs from what the state derives, and any state or SVG validation failure.
+It does not re-render the SVG; a renderer version change must decide explicitly whether earlier bundles stay in the supported set.
+`build` writes to a staging directory beside the destination, validates the staged files from disk, then replaces only the three owned paths; other destination files are untouched.
+`build --bootstrap` refuses a destination that already holds any owned file, and an update replaces only a destination bundle that validates, has the same subject ID, and whose `state.json` is byte-identical to the supplied prior state, so a local build cannot silently reset a habitat or replace newer growth with a candidate built from stale state.
+`SUPPORTED_RENDERERS` in `bundle.py` is a literal set, so a renderer change cannot drop earlier versions implicitly.
+The three replacements are not atomic as a set; validation detects a torn bundle through its hashes.
 Do not embed the output commit's own SHA or a wall-clock generation timestamp in its contents.
 Serialize the same logical inputs identically; byte-identical bundles produce no commit.
 Commit all three files together and perform an ordinary, non-forced push whose parent is the fetched output head.
