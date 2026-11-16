@@ -123,8 +123,28 @@ def _remote_head(git, remote):
 
 
 def _fetch(git, remote, expected):
-    """Fetch the remote output branch and require its head to be `expected`."""
-    git("fetch", "--quiet", "--no-tags", remote, f"+{REF}:refs/heads/fetched")
+    """Fetch the remote output branch and require its head to be `expected`.
+
+    A failed fetch is a conflict only when a fresh lookup confirms the head was
+    deleted or moved; otherwise, including a failed lookup, the fetch error
+    stands, so authentication and transport failures stay ordinary failures.
+    """
+    try:
+        git("fetch", "--quiet", "--no-tags", remote, f"+{REF}:refs/heads/fetched")
+    except ValueError:
+        try:
+            head = _remote_head(git, remote)
+        except ValueError:
+            head = expected
+        if head is None:
+            raise PublishConflict(
+                f"Output head {expected} was deleted during fetch"
+            ) from None
+        if head != expected:
+            raise PublishConflict(
+                f"Output head moved from {expected} during fetch"
+            ) from None
+        raise
     head = git("rev-parse", "--verify", "refs/heads/fetched^{commit}").decode()
     if head.strip() != expected:
         raise PublishConflict(f"Output head moved from {expected} during fetch")
@@ -224,6 +244,15 @@ def _push(git, remote, commit, parent):
     for line in result.stdout.decode("utf-8", "replace").splitlines():
         if line.startswith("!") and "\t[rejected]" in line:
             raise PublishConflict("Output head moved; the push was rejected")
+    # A head moved inside the receive phase fails the ref transaction as
+    # `[remote rejected]`, like a hook or protection rule; a fresh lookup
+    # tells them apart, and a failed lookup leaves the push error standing.
+    try:
+        head = _remote_head(git, remote)
+    except ValueError:
+        head = parent
+    if head != parent:
+        raise PublishConflict("Output head moved; the push was rejected")
     message = git._redact(
         result.stderr.decode("utf-8", "replace")
         + result.stdout.decode("utf-8", "replace")

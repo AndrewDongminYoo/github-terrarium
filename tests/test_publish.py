@@ -417,6 +417,41 @@ class PublishTests(unittest.TestCase):
         push.assert_not_called()
         self.assertEqual(self.head(), newer)
 
+    def test_head_deleted_during_fetch_is_a_conflict(self):
+        old = self.seed(FIRST)
+        real = publisher._fetch
+
+        def race(git, remote, expected):
+            self.rgit("update-ref", "-d", "refs/heads/output", old)
+            return real(git, remote, expected)
+
+        with (
+            patch.object(publisher, "_fetch", side_effect=race),
+            patch.object(publisher, "_push") as push,
+        ):
+            code, out, err = self.publish(SECOND, old)
+        self.assertEqual((code, out), (3, ""))
+        self.assertIn("deleted during fetch", err)
+        push.assert_not_called()
+        self.assertIsNone(self.head())
+
+    def test_fetch_failure_with_unconfirmed_head_is_not_a_conflict(self):
+        old = self.seed(FIRST)
+        real = publisher._fetch
+
+        def race(git, remote, expected):
+            self.remote.rename(self.root / "moved.git")
+            return real(git, remote, expected)
+
+        with (
+            patch.object(publisher, "_fetch", side_effect=race),
+            patch.object(publisher, "_push") as push,
+        ):
+            code, out, err = self.publish(SECOND, old)
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("fetch failed", err)
+        push.assert_not_called()
+
     def test_git_error_text_redacts_the_token(self):
         token = "ghp_secretTokenValue123"
         with tempfile.TemporaryDirectory() as directory:
@@ -435,6 +470,30 @@ class PublishTests(unittest.TestCase):
         self.assertEqual((code, out), (1, ""))
         self.assertIn("push failed", err)
         self.assertIsNone(self.head())
+
+    def test_head_moved_inside_receive_is_a_conflict(self):
+        old = self.seed(FIRST)
+        other = self.seed(SECOND, parent=old, ref=None)
+        hook = self.remote / "hooks" / "pre-receive"
+        hook.write_text(
+            "#!/bin/sh\ncat >/dev/null\nunset GIT_QUARANTINE_PATH\n"
+            f"git update-ref refs/heads/output {other} {old}\n"
+        )
+        hook.chmod(0o755)
+        code, out, err = self.publish(SECOND, old)
+        self.assertEqual((code, out), (3, ""))
+        self.assertIn("push was rejected", err)
+        self.assertEqual(self.head(), other)
+
+    def test_declined_update_with_unmoved_head_is_a_failure(self):
+        old = self.seed(FIRST)
+        hook = self.remote / "hooks" / "pre-receive"
+        hook.write_text("#!/bin/sh\ncat >/dev/null\necho denied >&2\nexit 1\n")
+        hook.chmod(0o755)
+        code, out, err = self.publish(SECOND, old)
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("push failed", err)
+        self.assertEqual(self.head(), old)
 
     def test_readback_head_mismatch_is_explicit(self):
         other = self.seed(SECOND, ref=None)
