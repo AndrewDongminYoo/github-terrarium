@@ -2,12 +2,19 @@ name: Public collection
 
 on:
   push:
-    branches: [main, feat/persistent-growth]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
+
+# Pull requests share one group per ref so a newer push cancels the older run.
+# Every other event gets a group of its own, so no push to main or dispatch is
+# superseded while pending.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -23,15 +30,78 @@ jobs:
       - run: python -m pip install --require-hashes -r requirements-dev.txt
       - run: python -m pip install -e .
       - run: python -m unittest discover -s tests -v
-      - run: ruff check src tests
-      - run: ruff format --check src tests
+      - run: ruff check src tests tools
+      - run: ruff format --check src tests tools
+
+  bundles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --require-hashes -r requirements-dev.txt
+      - run: python -m pip install -e .
+      - name: Build, rebuild, validate, and reject a tampered bundle
+        run: python tools/ci_bundles.py --source-commit "$(git rev-parse HEAD)" --log work/ci-bundles.log
+      - name: Upload the bundle log on failure
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bundles-failure
+          path: work/ci-bundles.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --require-hashes -r requirements-dev.txt
+      - run: python -m pip install -e .
+      - run: python -m playwright install --with-deps chromium webkit
+      - run: python tools/gallery.py build
+      - name: Check the gallery in Chromium, then WebKit
+        run: python tools/gallery.py check
+      - name: Upload gallery results and captures on failure
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: browser-failure
+          path: |
+            work/gallery/results-*.json
+            work/gallery/captures/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  live:
+    needs: test
+    if: github.event_name != 'pull_request' && github.repository == 'AndrewDongminYoo/github-terrarium' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --require-hashes -r requirements-dev.txt
+      - run: python -m pip install -e .
       - name: Probe public API with the workflow token
-        if: github.event_name != 'pull_request' && github.repository == 'AndrewDongminYoo/github-terrarium'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m github_terrarium probe
       - name: Collect completed public activity with the workflow token
-        if: github.event_name != 'pull_request' && github.repository == 'AndrewDongminYoo/github-terrarium'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
