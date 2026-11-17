@@ -65,10 +65,11 @@ A login rename must not create a different habitat.
 Changing to another user must fail with an identity mismatch until a deliberate reset is authorized.
 Successful empty collection means inactivity; failed collection means unknown data and must preserve the last valid output.
 
-## Scoring proposal
+## Scoring version 1
 
-These constants are versioned design defaults, not a calibrated measure of contribution quality.
-They must be evaluated against synthetic personas before the first release.
+These constants are frozen as scoring version 1; they are not a calibrated measure of contribution quality.
+They were approved on 2026-11-17 in [#20](https://github.com/AndrewDongminYoo/github-terrarium/issues/20#issuecomment-6932925175) after the fixture gallery review, with no formula change.
+Changing any weight, cap, threshold, trait cap, or bootstrap policy below requires a new scoring version with an explicit migration or refusal of older state; `tests/test_scoring_v1.py` pins these values and the persona results after bootstrap.
 
 For each completed activity day, let `P`, `R`, and `I` be the eligible PR, deduplicated review, and issue counts.
 Award `activity_xp = 12 × min(P, 5) + 4 × min(R, 10) + 3 × min(I, 5)`.
@@ -174,6 +175,5 @@ GitHub caching may delay the display of a new image; animation playback itself d
 
 ## Pending release decisions
 
-Review the generated paper-cut scenes across growth stages and activity personas with the operator before accepting the renderer port or expanding artwork.
-Calibrate scoring constants and performance budgets using the first implementation; change scoring only through a versioned migration decision.
+Calibrate performance budgets using the first implementation.
 The architecture and implementation order are defined in [the technical design](architecture.md) and [the plan](../plans/implementation.md).
