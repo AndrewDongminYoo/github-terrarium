@@ -74,6 +74,8 @@ Use a stable SHA-256-derived seed from the subject node ID plus a fixed seed-ver
 The implemented diagnostic command is `python -m github_terrarium probe`; it returns first-page sample counts, explicit truncation flags, and `complete_snapshot: false`.
 It does not produce a normalized growth snapshot or write state.
 The implemented `collect --start DATE [--end DATE] [--expected-subject ID]` command emits a validated snapshot to stdout, with the same configuration/repository flags as `probe`.
+It observes stock on the UTC date read before the first request and reads the clock again when collection finishes; when the date has changed, it exits 1 with a rerun instruction and prints no snapshot, so stock read after UTC midnight is never filed under the earlier day.
+A caller that passes its own observation day to the `collect()` API owns that check, as `generate` does.
 The offline `build --snapshot FILE (--state FILE | --bootstrap) --bundle-dir DIR --source-commit SHA` command reconciles growth, writes a validated three-file bundle, and prints its manifest; `validate --bundle-dir DIR` re-checks an existing bundle and prints its manifest.
 The `publish --bundle-dir DIR --repository OWNER/NAME --expected-parent SHA|absent [--bootstrap] [--remote URL]` command publishes a validated bundle; `absent` requires `--bootstrap` and `--bootstrap` requires `absent`.
 The caller can save `collect` output to a temporary file; `build` reads that snapshot and prior state.

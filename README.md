@@ -58,6 +58,7 @@ The snapshot contains public repository stock counts and daily PR, issue, and re
 These are GitHub-recognized contributions, not an exhaustive record of every GitHub action.
 Reviews count each PR once per UTC day; the generator repository, restricted/private records, and fork repositories' stock counts are excluded.
 Popularity is observed on the actual collection date even when the activity interval is historical.
+A collection that crosses UTC midnight fails with no snapshot; rerun it.
 The collector allows at most 1,000 HTTP attempts, 100 pages per connection, three attempts per request, and a four-minute collection deadline.
 Rate-limit waits above 30 seconds fail with no snapshot; rerun later.
 Collection does not award growth or publish output.
