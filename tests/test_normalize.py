@@ -1,7 +1,13 @@
+import contextlib
 import copy
+import io
+import tempfile
 import unittest
 from datetime import date
+from pathlib import Path
+from unittest.mock import patch
 
+from github_terrarium.__main__ import main
 from github_terrarium.config import Config
 from github_terrarium.normalize import collect
 
@@ -250,3 +256,73 @@ class CollectionTests(unittest.TestCase):
             else:
                 result = self.run_collect(client)
                 self.assertEqual(result["days"]["2026-11-13"]["prs"], 1)
+
+    def test_collection_crossing_utc_midnight_returns_no_snapshot(self):
+        days = iter([date(2026, 11, 15), date(2026, 11, 16)])
+        client = FixtureClient()
+        with self.assertRaisesRegex(ValueError, "UTC date changed.*rerun"):
+            collect(
+                Config("octocat", "owner/terrarium"),
+                date(2026, 11, 13),
+                date(2026, 11, 15),
+                client,
+                clock=lambda: next(days),
+            )
+        self.assertTrue(client.calls)
+
+    def test_guarded_collection_on_one_utc_day_returns_a_snapshot(self):
+        reads = []
+
+        def clock():
+            reads.append(None)
+            return date(2026, 11, 15)
+
+        value = collect(
+            Config("octocat", "owner/terrarium"),
+            date(2026, 11, 13),
+            date(2026, 11, 15),
+            FixtureClient(),
+            clock=clock,
+        )
+        self.assertEqual(value["observed_on"], "2026-11-15")
+        self.assertGreaterEqual(len(reads), 2)
+
+    def test_explicit_observation_day_leaves_the_check_to_the_caller(self):
+        value = self.run_collect(clock=lambda: date(2026, 11, 16))
+        self.assertEqual(value["observed_on"], "2026-11-15")
+
+    def test_cli_collection_crossing_utc_midnight_prints_nothing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / "terrarium.toml"
+            config.write_text('login = "octocat"\n')
+            before = sorted(Path(directory).iterdir())
+            output, error = io.StringIO(), io.StringIO()
+            with (
+                patch(
+                    "github_terrarium.__main__.GraphQLClient",
+                    return_value=FixtureClient(),
+                ),
+                patch(
+                    "github_terrarium.normalize.today",
+                    side_effect=[date(2026, 11, 15), date(2026, 11, 16)],
+                ),
+                contextlib.redirect_stdout(output),
+                contextlib.redirect_stderr(error),
+            ):
+                code = main(
+                    [
+                        "collect",
+                        "--config",
+                        str(config),
+                        "--repository",
+                        "owner/terrarium",
+                        "--start",
+                        "2026-11-13",
+                        "--end",
+                        "2026-11-15",
+                    ]
+                )
+            self.assertEqual(code, 1)
+            self.assertEqual(output.getvalue(), "")
+            self.assertIn("UTC date changed during collection", error.getvalue())
+            self.assertEqual(sorted(Path(directory).iterdir()), before)
