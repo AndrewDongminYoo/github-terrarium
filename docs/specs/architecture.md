@@ -268,7 +268,7 @@ Success prints canonical JSON with `activity_interval` (`start` inclusive, `end`
 
 ## GitHub Actions boundary
 
-The planned generation workflow has `schedule` and `workflow_dispatch` triggers only and runs trusted default-branch code.
+The generation workflow has `schedule` and `workflow_dispatch` triggers only and runs trusted default-branch code.
 Reject manual dispatch from another ref for the publication job.
 Use job-level `contents: write` only for generation/publication; CI uses read-only permissions and no data secrets.
 Do not run publishing through `pull_request_target` or execute contributor-controlled artifacts with a write token.
@@ -284,7 +284,22 @@ On failure, `bundles` and `browser` upload only the bundle log, `work/gallery/re
 The `live` job runs the workflow-token `probe` and `collect` only after `test` passes, outside pull requests, in this repository, and on `refs/heads/main`.
 Pull-request runs are grouped by workflow and ref, so a newer run cancels an older pending or in-progress one; every push to `main` and every dispatch gets its own group, so none is cancelled or superseded.
 
-The workflow summary reports subject, collection window, whether a gap was recovered, awarded growth, byte size, and publication/no-change/failure status.
+The generation workflow `generate.yml` runs on the `23 0 * * *` schedule (00:23 UTC, 09:23 Asia/Seoul, with no exact start time) and on manual dispatch; it has no `push`, `pull_request`, or `pull_request_target` trigger, so an `output` push cannot start it.
+It sets `permissions: {}` at the top level and grants `contents: write` only to its single `generate` job, which uses `github.token` and no other secret.
+The job condition requires this repository and either a scheduled run or a dispatch on `refs/heads/` plus the default branch, so a dispatch from another ref or a run in a fork skips every step, including checkout.
+The job checks out the triggering default-branch commit with `persist-credentials: false`, installs the hashed development lock and the package, and downloads or executes no artifact.
+The job runs in the concurrency group `terrarium-output` with `cancel-in-progress: false`, and it times out after 15 minutes; the group is declared on the job rather than the workflow with the intent that a run rejected by the job condition does not hold the queue, which GitHub's concurrency documentation does not state either way.
+It runs `generate --config terrarium.toml --repository "$GITHUB_REPOSITORY" --summary "$GITHUB_STEP_SUMMARY"` with `GH_TOKEN` set in that step only; untrusted expression values reach the script through step `env`, not through `run` interpolation.
+The dispatch input `bootstrap` defaults to `false` and is the only path to `--bootstrap`; scheduled runs never bootstrap.
+The schedule is active once the workflow is on the default branch.
+Until a manual dispatch with `bootstrap` creates `output`, every scheduled run fails with "Output branch is absent" and a failure summary.
+An `output` ref without a valid bundle fails every run, including a bootstrap dispatch, with "Existing output is invalid"; the workflow never deletes or resets it.
+Activation gates: the visual approval ([#13](https://github.com/AndrewDongminYoo/github-terrarium/issues/13)), the scoring version 1 freeze ([#20](https://github.com/AndrewDongminYoo/github-terrarium/issues/20)), and the license selection ([#21](https://github.com/AndrewDongminYoo/github-terrarium/issues/21)) are complete; the first manual bootstrap and production verification ([#26](https://github.com/AndrewDongminYoo/github-terrarium/issues/26)) remain.
+
+`generate --summary PATH` appends one Markdown summary to `PATH` and never truncates it.
+A success reports `published` or `no-change`, the subject ID, the activity interval, recovered gap days, the stock observation day, the XP delta, the `state.json` and `terrarium.svg` byte sizes, the output commit, and the attempt count.
+A failure reports `failure`, the exit code (1 for an error, 3 for a second conflict), and the one-line message printed to stderr; the exit code is unchanged, and a summary that cannot be written only adds a stderr warning.
+The summary contains no headers or raw API payloads, and any token value in it is replaced by `***`.
 Schedule delays or disabled workflows are operational states, not evidence of inactivity.
 Document GitHub's public-repository inactivity disablement and manual reactivation; do not assume generated commits permanently prevent disablement.
 Never create or rotate a personal token automatically.

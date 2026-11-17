@@ -87,10 +87,10 @@ Traceability: AC-02, AC-06, and AC-11.
 ## Milestone 6: daily GitHub Actions integration
 
 - [x] Add read-only `ci.yml` for the declared unit, formatting, lint, and fixture-validation commands.
-- [ ] Add `generate.yml` with default-branch-only `workflow_dispatch`, the 00:23 UTC schedule, a bounded job timeout, and serialized publication with cancellation disabled.
-- [ ] Set publication permissions at the job level, pin actions to verified commit SHAs, and keep PR validation away from write credentials.
-- [ ] Connect collection, previous-state loading, building, validation, publication, and concise failure summaries.
-- [ ] Document workflow enabling, manual reruns, token capability, output URLs, schedule delay/disablement, and recovery in the README.
+- [x] Add `generate.yml` with default-branch-only `workflow_dispatch`, the 00:23 UTC schedule, a bounded job timeout, and serialized publication with cancellation disabled.
+- [x] Set publication permissions at the job level, pin actions to verified commit SHAs, and keep PR validation away from write credentials.
+- [x] Connect collection, previous-state loading, building, validation, publication, and concise failure summaries.
+- [x] Document workflow enabling, manual reruns, token capability, output URLs, schedule delay/disablement, and recovery in the README.
 
 Acceptance: manual generation publishes a validated bundle; an output push cannot trigger regeneration; failed collection preserves the existing image and state.
 Verification: read the full workflow run and job result, inspect the live output commit/manifest, repeat a same-day run, and observe a later-day transition before claiming daily growth works.
