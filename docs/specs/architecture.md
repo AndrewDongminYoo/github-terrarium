@@ -275,6 +275,15 @@ Do not run publishing through `pull_request_target` or execute contributor-contr
 Do not add a push trigger for `output`, and do not depend on bot-commit trigger suppression to prevent a loop.
 Pin third-party actions to verified full commit SHAs at implementation time; do not copy stale version assumptions from this document.
 
+The read-only CI workflow `ci.yml` runs on pushes to `main`, on every pull request, and on manual dispatch; no trigger covers `output`, so output pushes cannot start CI or generation.
+It sets `contents: read` at the top level, grants no job write permission, uses no secret other than `github.token`, and never uses `pull_request_target`.
+Its jobs fail independently: `test` runs the unit tests and Ruff over `src tests tools`, `bundles` runs `tools/ci_bundles.py`, and `browser` installs Chromium and WebKit and runs the fixture gallery `build` and `check`.
+`tools/ci_bundles.py` bootstrap-builds every persona fixture twice with the checked-out commit, requires `validate` to pass and both bundles to be byte-identical, and requires `validate` to reject a copy whose SVG differs by one byte with exit 1, no stdout, and a hash-mismatch error.
+Gallery cells the harness cannot deliver stay pending; the `browser` job fails only on failed cells, including a negative control that passes.
+On failure, `bundles` and `browser` upload only the bundle log, `work/gallery/results-*.json`, and `work/gallery/captures/`, for seven days.
+The `live` job runs the workflow-token `probe` and `collect` only after `test` passes, outside pull requests, in this repository, and on `refs/heads/main`.
+Pull-request runs are grouped by workflow and ref, so a newer run cancels an older pending or in-progress one; every push to `main` and every dispatch gets its own group, so none is cancelled or superseded.
+
 The workflow summary reports subject, collection window, whether a gap was recovered, awarded growth, byte size, and publication/no-change/failure status.
 Schedule delays or disabled workflows are operational states, not evidence of inactivity.
 Document GitHub's public-repository inactivity disablement and manual reactivation; do not assume generated commits permanently prevent disablement.

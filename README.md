@@ -39,7 +39,7 @@ ruff check src tests tools
 ruff format --check src tests tools
 ```
 
-The CI workflow is prepared to run the tests, Ruff over `src tests`, and a read-only workflow-token probe on trusted pushes; it does not lint `tools` yet, so run the `tools` checks locally.
+The read-only CI workflow runs these checks, an offline bundle regression (`python tools/ci_bundles.py`), and the fixture gallery in Chromium and WebKit on Linux; its triggers, credentials, and live-probe conditions are defined in the [GitHub Actions boundary](docs/specs/architecture.md#github-actions-boundary).
 Hosted tests and public API access with the default workflow token passed in [Actions run 43690047131](https://github.com/AndrewDongminYoo/github-terrarium/actions/runs/43690047131) at `aaa3759`.
 Daily review recovery was verified against existing public reviews; see [collection evidence](docs/notes/collection-verification.md).
 Regenerate the development lock with `uv pip compile requirements-dev.in --generate-hashes -o requirements-dev.txt` after changing the input.
@@ -244,7 +244,7 @@ main
 │   └── specs/
 ├── src/github_terrarium/
 ├── tests/
-└── tools/            # asset extraction and the browser fixture gallery
+└── tools/            # asset extraction, the bundle regression, and the browser fixture gallery
 ```
 
 The planned `output` branch will contain `terrarium.svg`, `state.json`, and `manifest.json` at its root.
