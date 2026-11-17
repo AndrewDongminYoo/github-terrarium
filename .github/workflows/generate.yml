@@ -1,0 +1,49 @@
+name: Daily generation
+
+# 00:23 UTC is 09:23 Asia/Seoul; GitHub may start scheduled runs late or skip
+# them. Scheduled runs fail with "Output branch is absent" until a manual
+# dispatch with `bootstrap` creates the `output` branch.
+on:
+  schedule:
+    - cron: '23 0 * * *'
+  workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: Create the output branch (only while it is absent)
+        type: boolean
+        default: false
+
+permissions: {}
+
+jobs:
+  generate:
+    # Scheduled runs use the default branch; a dispatch from any other ref or
+    # a run in another repository skips every step, including checkout.
+    if: github.repository == 'AndrewDongminYoo/github-terrarium' && (github.event_name == 'schedule' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # One publisher at a time; a queued run waits instead of cancelling the
+    # active one. The group sits on the job so that, by intent, a run rejected
+    # by `if:` does not hold the queue.
+    concurrency:
+      group: terrarium-output
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --require-hashes -r requirements-dev.txt
+      - run: python -m pip install .
+      - name: Generate and publish the terrarium
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BOOTSTRAP: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap }}
+        run: |
+          set --
+          if [ "$BOOTSTRAP" = "true" ]; then set -- --bootstrap; fi
+          python -m github_terrarium generate --config terrarium.toml --repository "$GITHUB_REPOSITORY" --summary "$GITHUB_STEP_SUMMARY" "$@"

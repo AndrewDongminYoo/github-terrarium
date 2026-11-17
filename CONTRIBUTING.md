@@ -1,6 +1,6 @@
 # Contributing
 
-This repository has a read-only paginated public collector, an offline persistent-growth engine, and an SVG rendering API with bounded ambient motion, an offline SVG validation API, offline output-bundle `build`/`validate` commands, a low-level `publish` command for the `output` branch, and a `generate` command that connects them with one conflict recollection.
+This repository has a read-only paginated public collector, an offline persistent-growth engine, and an SVG rendering API with bounded ambient motion, an offline SVG validation API, offline output-bundle `build`/`validate` commands, a low-level `publish` command for the `output` branch, a `generate` command that connects them with one conflict recollection, and the guarded daily `generate.yml` workflow.
 Start with the [implementation plan](docs/plans/implementation.md) and its linked contracts before adding code.
 
 ## Changes

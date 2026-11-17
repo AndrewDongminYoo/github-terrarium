@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .bundle import build_files, source_commit, validate_bundle, write_bundle
 from .config import load_config
-from .generate import generate
+from .generate import generate, summary_markdown
 from .github import GraphQLClient
 from .growth import advance
 from .models import canonical_json
@@ -87,6 +87,9 @@ def main(argv=None):
         help="Defaults to GITHUB_SHA",
     )
     command.add_argument("--remote", help="Override the GitHub remote URL")
+    command.add_argument(
+        "--summary", type=Path, help="Append a Markdown job summary to this file"
+    )
     args = parser.parse_args(argv)
     if args.command == "generate" and args.source_commit is None:
         parser.error("--source-commit or GITHUB_SHA is required")
@@ -105,6 +108,7 @@ def main(argv=None):
                 token=os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"),
             )
             print(canonical_json(result), end="")
+            _summary(args, result)
             return 0
         if args.command == "publish":
             result = publish(
@@ -161,12 +165,28 @@ def main(argv=None):
             )
     except PublishConflict as error:
         print(f"conflict: {error}", file=sys.stderr)
+        _summary(args, code=3, message=f"conflict: {error}")
         return 3
     except (ValueError, OSError) as error:
         print(f"error: {error}", file=sys.stderr)
+        _summary(args, code=1, message=f"error: {error}")
         return 1
     print(canonical_json(result), end="")
     return 0
+
+
+def _summary(args, result=None, *, code=0, message=None):
+    """Append a `generate --summary` report; a write failure keeps the exit code."""
+    path = getattr(args, "summary", None)
+    if path is None:
+        return
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    text = summary_markdown(result, code=code, message=message, token=token)
+    try:
+        with open(path, "a", encoding="utf-8") as stream:
+            stream.write(text)
+    except OSError as error:
+        print(f"warning: summary not written: {error}", file=sys.stderr)
 
 
 if __name__ == "__main__":

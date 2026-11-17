@@ -9,8 +9,8 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, a low-level `publish` command pushes a validated bundle to the `output` branch, and `generate` connects collection, growth, building, and publication with one fresh recollection after a conflict; a development-only browser fixture gallery checks the images through HTML `img` elements, and the daily workflow remains planned.
-No scheduled generation is available at this stage.
+The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, a low-level `publish` command pushes a validated bundle to the `output` branch, and `generate` connects collection, growth, building, and publication with one fresh recollection after a conflict; a development-only browser fixture gallery checks the images through HTML `img` elements, and the guarded daily workflow `generate.yml` runs `generate` on a schedule and on manual dispatch.
+No habitat has been published yet, and no scheduled run has been verified.
 
 ## Run the collection probe
 
@@ -207,7 +207,19 @@ GH_TOKEN=... python -m github_terrarium generate --config terrarium.toml --repos
 An update collects the last 30 completed UTC days plus any missed days; a gap over 90 days or an unfinished recovery fails before collection and needs `grow --recover-through` batches.
 If another publisher moves the head first, the run discards its snapshot, reads the new head, collects again, and retries once; a second conflict exits 3 and leaves the newer output untouched.
 `--source-commit` defaults to `GITHUB_SHA`, and `--remote URL` works as for `publish`.
-Success prints one JSON summary with the activity interval, stock date, recovered gap days, XP delta, file sizes, attempts, commit, and `published` or `no-change`; failures print one line to stderr and nothing to stdout.
+Success prints one JSON summary with the activity interval, stock date, recovered gap days, XP delta, file sizes, attempts, commit, and `published` or `no-change`; failures print one error line to stderr and nothing to stdout.
+`--summary PATH` also appends a Markdown summary of the result or the failure to `PATH`, as the workflow does with `GITHUB_STEP_SUMMARY`; if `PATH` cannot be written, the exit code is unchanged and stderr gets one more `warning: summary not written:` line, after a success too.
+
+## Daily workflow
+
+[`generate.yml`](.github/workflows/generate.yml) runs `generate` at 00:23 UTC each day (09:23 Asia/Seoul) and on manual dispatch from the default branch; the [GitHub Actions boundary](docs/specs/architecture.md#github-actions-boundary) defines its triggers, permissions, and guards.
+
+- **Enabling:** the schedule is active once the workflow is on the default branch. Scheduled runs fail with "Output branch is absent" until one manual run creates the habitat (Actions → Daily generation → Run workflow on the default branch, with `bootstrap` checked).
+- **Manual reruns:** run the workflow again with `bootstrap` unchecked. The manifest records the source commit, so a rerun reports `no-change` and pushes nothing only when it collects nothing new and the default branch has not moved since the last publication; otherwise it publishes a new `output` commit. A dispatch from another branch skips the job.
+- **Token:** the job uses only the repository `GITHUB_TOKEN` with `contents: write`; no personal token or secret is needed, and none is created or rotated.
+- **Output URLs:** after the bootstrap, the image is `https://raw.githubusercontent.com/AndrewDongminYoo/github-terrarium/output/terrarium.svg`, next to `state.json` and `manifest.json` on the [`output` branch](https://github.com/AndrewDongminYoo/github-terrarium/tree/output).
+- **Delays and disablement:** GitHub can start scheduled runs late or drop them, and disables schedules in a public repository after 60 days without repository activity; re-enable the workflow on the Actions page. A missed day is collected by the next run, and a delay is not inactivity.
+- **Failures and recovery:** read the job summary; a failed run leaves the last valid habitat unchanged. A gap over 90 days or an unfinished recovery needs `grow --recover-through` batches, and the workflow never resets or bootstraps over an existing branch.
 
 ## Planned experience
 
@@ -248,8 +260,8 @@ main
 ```
 
 The planned `output` branch will contain `terrarium.svg`, `state.json`, and `manifest.json` at its root.
-It will be created by the first validated `publish --bootstrap`, not by this documentation bootstrap.
-The planned default schedule is 00:23 UTC each day (09:23 Asia/Seoul), subject to GitHub scheduling delays.
+It will be created by the first validated bootstrap publication, not by this documentation bootstrap.
+The daily schedule is 00:23 UTC (09:23 Asia/Seoul), subject to GitHub scheduling delays.
 
 ## License
 
