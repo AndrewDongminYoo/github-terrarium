@@ -29,7 +29,8 @@ It exits 1 when any cell fails, including when a negative control passes.
 | Motion | normal: `reduced_motion="no-preference"`; reduced: `reduced_motion="reduce"`, plus `--force-prefers-reduced-motion` at Chromium launch |
 | Frame interval | at least 2.0 seconds between the end of the first capture and the start of the second; measured 2.0–5.28 s in Chromium and 2.0–6.2 s in WebKit (per image, from one run) |
 
-Linux Chromium and Linux WebKit cells are **pending**: they belong to issue #18 and were not run here.
+~~Linux Chromium and Linux WebKit cells are **pending**: they belong to issue #18 and were not run here.~~
+Superseded on 2026-11-17: see [Reconciliation: first Linux run](#reconciliation-first-linux-run-2026-11-17).
 
 ## Fixtures
 
@@ -102,7 +103,22 @@ These numbers come from one headless run on the host above; they do not establis
 
 ## Limits
 
-- Linux engines and CI integration remain issue #18.
+- ~~Linux engines and CI integration remain issue #18.~~ Superseded on 2026-11-17 by the reconciliation below.
 - WebKit reduced motion through `img` is pending as described above.
 - Visual approval of the scenes remains issue #13.
 - Captures cover headless engines driven by Playwright, not GitHub's README image proxy; milestone 7 owns that smoke scenario.
+
+## Reconciliation: first Linux run (2026-11-17)
+
+The measurements above are the 2026-11-16 macOS run and are unchanged.
+Issue #18 added the gallery to CI ([PR #47](https://github.com/AndrewDongminYoo/github-terrarium/pull/47)), and its `browser` job ran the Linux cells for the first time in [Actions run 44021690669](https://github.com/AndrewDongminYoo/github-terrarium/actions/runs/44021690669) at `a9b19fa`.
+
+| Item | Value |
+| --- | --- |
+| Host | GitHub-hosted `ubuntu-latest`, image `ubuntu-26.04` version `20261111.196.1` |
+| Browsers | installed by `python -m playwright install --with-deps chromium webkit` (Playwright for Python 1.65.2) |
+| Chromium 159.0.8154.6 | 12 passed, 0 pending, 0 failed |
+| WebKit 27.2 | 6 passed, 6 pending, 0 failed |
+
+The six pending WebKit cells are reduced motion through `img`, the same harness limit as on macOS.
+The authority for later runs is the `browser` job in [`ci.yml`](../../.github/workflows/ci.yml), which runs both engines on every pull request and push to `main`; this note records only the first run.
