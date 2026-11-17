@@ -39,9 +39,30 @@ def activity_query(metric):
     }""" % (field, details)
 
 
-def collect(config, start, end, client, *, observed_on=None, expected_subject=None):
-    """Read at most 90 completed days; only return after every page succeeds."""
-    observed_on = observed_on or datetime.now(UTC).date()
+def today():
+    return datetime.now(UTC).date()
+
+
+def collect(
+    config,
+    start,
+    end,
+    client,
+    *,
+    observed_on=None,
+    expected_subject=None,
+    clock=None,
+):
+    """Read at most 90 completed days; only return after every page succeeds.
+
+    Without an explicit `observed_on`, stock is observed on the clock's UTC date,
+    and a collection that ends on a later UTC date fails so that stock read
+    after midnight is never filed under the earlier day. A caller that passes
+    `observed_on` owns that check.
+    """
+    clock = clock or today
+    guard = observed_on is None
+    observed_on = observed_on or clock()
     if not 0 < (end - start).days <= 90 or end > observed_on:
         raise ValueError("Collect requires 1–90 completed UTC days")
     owner, name = config.repository.split("/")
@@ -140,7 +161,7 @@ def collect(config, start, end, client, *, observed_on=None, expected_subject=No
                         days[day.isoformat()][metric] += 1
                         seen.add(key)
                 window_start = window_end
-        return validate_snapshot(
+        snapshot = validate_snapshot(
             {
                 "schema_version": 1,
                 "complete_snapshot": True,
@@ -154,3 +175,6 @@ def collect(config, start, end, client, *, observed_on=None, expected_subject=No
         )
     except (KeyError, TypeError, AttributeError):
         raise ValueError("Collection response is missing required fields") from None
+    if guard and clock() != observed_on:
+        raise ValueError("UTC date changed during collection; no snapshot, rerun")
+    return snapshot
