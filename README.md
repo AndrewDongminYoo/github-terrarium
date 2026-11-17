@@ -10,7 +10,8 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
 The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, a low-level `publish` command pushes a validated bundle to the `output` branch, and `generate` connects collection, growth, building, and publication with one fresh recollection after a conflict; a development-only browser fixture gallery checks the images through HTML `img` elements, and the guarded daily workflow `generate.yml` runs `generate` on a schedule and on manual dispatch.
-No habitat has been published yet, and no scheduled run has been verified.
+The first habitat was published by a manual bootstrap run on 2026-11-17, and a same-day replay reported `no-change`; see [publication verification](docs/notes/2026-11-17-publication-verification.md).
+No scheduled run has been verified.
 
 ## Run the collection probe
 
@@ -214,7 +215,7 @@ Success prints one JSON summary with the activity interval, stock date, recovere
 
 [`generate.yml`](.github/workflows/generate.yml) runs `generate` at 00:23 UTC each day (09:23 Asia/Seoul) and on manual dispatch from the default branch; the [GitHub Actions boundary](docs/specs/architecture.md#github-actions-boundary) defines its triggers, permissions, and guards.
 
-- **Enabling:** the schedule is active once the workflow is on the default branch. Scheduled runs fail with "Output branch is absent" until one manual run creates the habitat (Actions → Daily generation → Run workflow on the default branch, with `bootstrap` checked).
+- **Enabling:** the schedule is active once the workflow is on the default branch. Scheduled runs fail with "Output branch is absent" until one manual run creates the habitat (Actions → Daily generation → Run workflow on the default branch, with `bootstrap` checked); that bootstrap ran on 2026-11-17, so `output` now exists.
 - **Manual reruns:** run the workflow again with `bootstrap` unchecked. The manifest records the source commit, so a rerun reports `no-change` and pushes nothing only when it collects nothing new and the default branch has not moved since the last publication; otherwise it publishes a new `output` commit. A dispatch from another branch skips the job.
 - **Token:** the job uses only the repository `GITHUB_TOKEN` with `contents: write`; no personal token or secret is needed, and none is created or rotated.
 - **Output URLs:** after the bootstrap, the image is `https://raw.githubusercontent.com/AndrewDongminYoo/github-terrarium/output/terrarium.svg`, next to `state.json` and `manifest.json` on the [`output` branch](https://github.com/AndrewDongminYoo/github-terrarium/tree/output).
@@ -259,8 +260,8 @@ main
 └── tools/            # asset extraction, the bundle regression, and the browser fixture gallery
 ```
 
-The planned `output` branch will contain `terrarium.svg`, `state.json`, and `manifest.json` at its root.
-It will be created by the first validated bootstrap publication, not by this documentation bootstrap.
+The `output` branch contains `terrarium.svg`, `state.json`, and `manifest.json` at its root.
+The first validated bootstrap publication created it on 2026-11-17.
 The daily schedule is 00:23 UTC (09:23 Asia/Seoul), subject to GitHub scheduling delays.
 
 ## License
