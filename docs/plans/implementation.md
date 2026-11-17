@@ -102,7 +102,7 @@ Traceability: AC-04, AC-06, AC-10, and AC-11.
 - [ ] Publish a demonstration README in this repository that embeds the generated SVG; do not edit the operator's separate profile repository without authorization.
 - [ ] Verify animation through GitHub's rendered image, freshness labeling, caching behavior, and mobile-width readability.
 - [ ] Measure real rendering behavior for the richest fixture and record devices/browsers used; reduce expensive detail if the initial budget is insufficient.
-- [ ] Calibrate the proposed scoring constants against the fixture gallery and freeze scoring version 1 before ongoing production growth.
+- [x] Calibrate the proposed scoring constants against the fixture gallery and freeze scoring version 1 before ongoing production growth ([#20](https://github.com/AndrewDongminYoo/github-terrarium/issues/20#issuecomment-6932925175), 2026-11-17).
 - [x] Select a license with the operator before distributing reusable code/art and retain provenance for any adopted material.
 - [ ] Update README status, setup steps, actual commands, and recovery instructions; preserve visible review and verification evidence with the release work.
 
