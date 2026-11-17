@@ -20,9 +20,18 @@ from .github import GraphQLClient
 from .growth import GAP_TOO_LONG, RECOVERY_UNFINISHED, advance
 from .models import iso_day
 from .normalize import collect
-from .publish import ABSENT, PublishConflict, publish, read_output
+from .publish import (
+    ABSENT,
+    AbsentOutputConflict,
+    PublishConflict,
+    publish,
+    read_output,
+)
 
 ATTEMPTS = 2
+NEEDS_BOOTSTRAP = (
+    "Output branch is absent; rerun with --bootstrap to create the habitat"
+)
 WINDOW = 30
 RECOVERY = "; run grow --recover-through batches"
 
@@ -73,9 +82,7 @@ def _interval(previous, day):
 def _attempt(config, repo, commit, *, bootstrap, remote, token, clock, collector):
     head, owned = read_output(repo, remote=remote, token=token)
     if head is None and not bootstrap:
-        raise ValueError(
-            "Output branch is absent; rerun with --bootstrap to create the habitat"
-        )
+        raise ValueError(NEEDS_BOOTSTRAP)
     if head is not None and bootstrap:
         raise ValueError("Bootstrap refuses an existing output branch")
     previous = None if head is None else json.loads(owned[STATE])
@@ -194,6 +201,10 @@ def generate(
                 clock=clock,
                 collector=collector,
             )
+        except AbsentOutputConflict:
+            if attempt == ATTEMPTS:
+                raise ValueError(NEEDS_BOOTSTRAP) from None
+            continue
         except PublishConflict:
             if attempt == ATTEMPTS:
                 raise PublishConflict(

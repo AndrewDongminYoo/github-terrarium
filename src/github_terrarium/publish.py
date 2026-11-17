@@ -40,6 +40,10 @@ class PublishConflict(ValueError):
     """The remote output head is not the expected parent."""
 
 
+class AbsentOutputConflict(PublishConflict):
+    """The output branch is absent although a commit parent was expected."""
+
+
 class ReadbackError(ValueError):
     """The push succeeded but the remote did not read back as published."""
 
@@ -306,9 +310,10 @@ def publish(bundle_dir, repo, parent, *, bootstrap=False, remote=None, token=Non
     """Publish `bundle_dir` over the expected output `parent`; return a result.
 
     `parent` is a full commit SHA or `absent`; `absent` requires `bootstrap`.
-    Raises PublishConflict when the remote head is not `parent`, ReadbackError
-    when the push succeeded but the remote did not read back as published,
-    and ValueError for every other failure.
+    Raises PublishConflict when `parent` is a SHA and the remote head is absent
+    (AbsentOutputConflict) or differs from it, ReadbackError when the push
+    succeeded but the remote did not read back as published, and ValueError
+    for every other failure, including a bootstrap over an existing branch.
     """
     repo = repository(repo)
     parent = expected_parent(parent)
@@ -331,7 +336,9 @@ def publish(bundle_dir, repo, parent, *, bootstrap=False, remote=None, token=Non
             entries, base = {}, None
         else:
             if head is None:
-                raise ValueError("Output branch is absent; bootstrap is required")
+                raise AbsentOutputConflict(
+                    f"Output branch is absent, expected {parent}"
+                )
             if head != parent:
                 raise PublishConflict(f"Output head is {head}, expected {parent}")
             base = _fetch(git, remote, parent)

@@ -314,6 +314,40 @@ class GenerateTests(Remote, unittest.TestCase):
         self.assertEqual(result["attempts"], 2)
         self.assertEqual(self.parent(result["commit"]), first)
 
+    def test_branch_deleted_during_collection_requires_bootstrap(self):
+        self.bootstrap()
+
+        def delete():
+            self.rgit("update-ref", "-d", "refs/heads/output")
+
+        collector = Collector(hooks=(delete,))
+        with patch.object(
+            generator, "publish", side_effect=generator.publish
+        ) as published:
+            with self.assertRaisesRegex(ValueError, "rerun with --bootstrap"):
+                self.generate(collector)
+        self.assertEqual(published.call_count, 1)
+        self.assertEqual(len(collector.calls), 1)
+        self.assertIsNone(self.head())
+
+    def test_branch_deleted_during_recollection_requires_bootstrap(self):
+        self.bootstrap()
+        hook, _ = self.other_publisher(stars=20)
+
+        def delete():
+            self.rgit("update-ref", "-d", "refs/heads/output")
+
+        collector = Collector(hooks=(hook, delete))
+        with patch.object(
+            generator, "publish", side_effect=generator.publish
+        ) as published:
+            with self.assertRaisesRegex(ValueError, "rerun with --bootstrap") as raised:
+                self.generate(collector)
+        self.assertNotIsInstance(raised.exception, PublishConflict)
+        self.assertEqual(published.call_count, 2)
+        self.assertEqual(len(collector.calls), 2)
+        self.assertIsNone(self.head())
+
     def test_readback_failure_is_not_retried(self):
         self.bootstrap()
         collector = Collector(stars=(15,))

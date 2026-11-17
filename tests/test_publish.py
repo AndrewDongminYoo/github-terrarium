@@ -149,11 +149,20 @@ class PublishTests(unittest.TestCase):
         self.assertIn("existing output branch", err)
         self.assertEqual(self.head(), old)
 
-    def test_expected_parent_on_absent_branch_fails(self):
+    def test_expected_parent_on_absent_branch_is_a_conflict(self):
         code, out, err = self.publish(FIRST, COMMIT)
-        self.assertEqual((code, out), (1, ""))
-        self.assertIn("bootstrap is required", err)
+        self.assertEqual((code, out), (3, ""))
+        self.assertIn(f"Output branch is absent, expected {COMMIT}", err)
         self.assertIsNone(self.head())
+
+    def test_deleted_branch_under_sha_parent_is_a_conflict(self):
+        old = self.seed(FIRST)
+        self.rgit("update-ref", "-d", "refs/heads/output")
+        code, out, err = self.publish(SECOND, old)
+        self.assertEqual((code, out), (3, ""))
+        self.assertIn(f"Output branch is absent, expected {old}", err)
+        self.assertIsNone(self.head())
+        self.assertEqual(self.rgit("for-each-ref"), b"")
 
     def test_usage_errors_exit_two(self):
         for args in (
