@@ -9,7 +9,7 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 
 **Status: public collection, persistent growth, and animated SVG rendering implemented.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
-The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, a low-level `publish` command pushes a validated bundle to the `output` branch, and `generate` connects collection, growth, building, and publication with one fresh recollection after a conflict; a development-only browser fixture gallery checks the images through HTML `img` elements, and the guarded daily workflow `generate.yml` runs `generate` on a schedule and on manual dispatch.
+The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, a low-level `publish` command pushes a validated bundle to the `output` branch, `generate` connects collection, growth, building, and publication with one fresh recollection after a conflict, and a manual `restore` command brings back an earlier output bundle as a new commit; a development-only browser fixture gallery checks the images through HTML `img` elements, and the guarded daily workflow `generate.yml` runs `generate` on a schedule and on manual dispatch.
 The first habitat was published by a manual bootstrap run on 2026-11-17, and a same-day replay reported `no-change`; see [publication verification](docs/notes/2026-11-17-publication-verification.md).
 No scheduled run has been verified.
 
@@ -211,6 +211,22 @@ If another publisher moves the head first, the run discards its snapshot, reads 
 Success prints one JSON summary with the activity interval, stock date, recovered gap days, XP delta, file sizes, attempts, commit, and `published` or `no-change`; failures print one error line to stderr and nothing to stdout.
 `--summary PATH` also appends a Markdown summary of the result or the failure to `PATH`, as the workflow does with `GITHUB_STEP_SUMMARY`; if `PATH` cannot be written, the exit code is unchanged and stderr gets one more `warning: summary not written:` line, after a success too.
 
+## Restore a historical bundle
+
+`restore` is a manual maintenance command that brings back the bundle of an earlier `output` commit as a new commit on top of the current head.
+
+```bash
+GH_TOKEN=... python -m github_terrarium restore --repository AndrewDongminYoo/github-terrarium --from-commit <earlier output SHA> --expected-parent "$(git ls-remote https://github.com/AndrewDongminYoo/github-terrarium.git refs/heads/output | cut -f1)"
+```
+
+Both SHAs are full 40-character SHAs, and `--from-commit` must be the current head or one of its ancestors on `output`.
+The historical `manifest.json`, `state.json`, and `terrarium.svg` must validate as a bundle for the same subject with supported versions; they are written unchanged, every other path on `output` is kept, and the history is never rewritten.
+This is the only command that may move the activity and popularity dates backwards; the next `generate` grows from the restored state with the normal 30-day window and 90-day gap rules.
+A head that is absent or differs from `--expected-parent`, or a push rejected by the lease, exits 3 and is not retried; read the head again and choose again.
+A push refused by a hook or a branch protection rule exits 1.
+Any other refusal exits 1 and pushes nothing, identical files report `no-change`, and `--remote URL` works as for `publish`.
+Success prints one JSON result with the outcome, the restored-from commit, the new commit, its parent, and the file hashes.
+
 ## Daily workflow
 
 [`generate.yml`](.github/workflows/generate.yml) runs `generate` at 00:23 UTC each day (09:23 Asia/Seoul) and on manual dispatch from the default branch; the [GitHub Actions boundary](docs/specs/architecture.md#github-actions-boundary) defines its triggers, permissions, and guards.
@@ -220,7 +236,7 @@ Success prints one JSON summary with the activity interval, stock date, recovere
 - **Token:** the job uses only the repository `GITHUB_TOKEN` with `contents: write`; no personal token or secret is needed, and none is created or rotated.
 - **Output URLs:** after the bootstrap, the image is `https://raw.githubusercontent.com/AndrewDongminYoo/github-terrarium/output/terrarium.svg`, next to `state.json` and `manifest.json` on the [`output` branch](https://github.com/AndrewDongminYoo/github-terrarium/tree/output).
 - **Delays and disablement:** GitHub can start scheduled runs late or drop them, and disables schedules in a public repository after 60 days without repository activity; re-enable the workflow on the Actions page. A missed day is collected by the next run, and a delay is not inactivity.
-- **Failures and recovery:** read the job summary; a failed run leaves the last valid habitat unchanged. A gap over 90 days or an unfinished recovery needs `grow --recover-through` batches, and the workflow never resets or bootstraps over an existing branch.
+- **Failures and recovery:** read the job summary; a failed run leaves the last valid habitat unchanged. A gap over 90 days or an unfinished recovery needs `grow --recover-through` batches, and the workflow never resets or bootstraps over an existing branch. To roll back to an earlier valid bundle, run [`restore`](#restore-a-historical-bundle) by hand; the workflow never restores.
 
 ## Planned experience
 

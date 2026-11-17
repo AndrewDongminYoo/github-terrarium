@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, offline bundle build/validation, output publication, and the `generate` orchestration with one conflict recollection are implemented; the scheduled workflow remains planned.
+Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, offline bundle build/validation, output publication, the `generate` orchestration with one conflict recollection, and the `restore` maintenance command are implemented; the scheduled workflow remains planned.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -81,11 +81,12 @@ The local `grow --bootstrap` command requires exactly 30 completed days and no s
 `publish --bootstrap` additionally proves the remote output branch does not exist; a failed branch lookup is a failure, not an absent branch.
 Offline builds require an explicit fixture date and never contact GitHub.
 Routine runs use the current UTC date; historical recovery must not fabricate past popularity snapshots.
-Failures return exit status 1 with sanitized diagnostics; usage errors return 2; a publish conflict returns 3.
+Failures return exit status 1 with sanitized diagnostics; usage errors return 2; a publish or restore conflict returns 3.
 The offline `grow --snapshot FILE` command requires either `--state FILE` or `--bootstrap`, accepts optional `--recover-through DATE`, and prints a validated candidate state.
 `--remote` overrides the default `https://github.com/OWNER/NAME.git` remote for local bare-remote tests.
 The online `generate --config FILE --repository OWNER/NAME [--bootstrap] [--source-commit SHA] [--remote URL]` command connects collection, growth, bundle building, and publication; `--source-commit` defaults to `GITHUB_SHA`, and a missing or non-canonical SHA is a usage error.
 The token comes only from `GH_TOKEN` or `GITHUB_TOKEN`, and the output branch is always `output`.
+The maintenance `restore --repository OWNER/NAME --from-commit SHA --expected-parent SHA [--remote URL]` command restores a historical output bundle; both SHAs must be full lowercase 40-character SHAs, and `absent` is a usage error.
 
 ## Collection and normalization
 
@@ -266,6 +267,18 @@ A `PublishConflict` in the read or the publication discards that attempt's snaps
 A conflict in the second attempt exits 3; collection, build, validation, and readback failures exit 1 and are not retried.
 Success prints canonical JSON with `activity_interval` (`start` inclusive, `end` exclusive), `attempts`, `bytes` of `state.json` and `terrarium.svg`, `commit`, `outcome` (`published` or `no-change`), `recovered_gap_days` (days collected beyond the 30-day window), `stock_observation_day`, `subject_id`, and `xp_delta` (total awarded XP after minus before); a failure prints nothing to stdout and one sanitized line to stderr.
 
+`publish.restore` implements the `restore` command, a deliberate maintenance operation that no workflow runs.
+It looks up `refs/heads/output` with `ls-remote`; an absent branch or a head other than `--expected-parent`, before or during the fetch, or a push rejected by the lease, is a conflict with exit status 3 and is never retried, so the operator must choose a new parent.
+`--from-commit` must be the expected parent or one of its ancestors in the fetched output history; a commit from another branch or repository, or a later commit, is refused with exit status 1.
+The current head must hold a valid bundle, and the historical commit must hold the three owned paths as regular files that validate as a bundle (manifest hashes, supported manifest, schema, scoring, and renderer versions, state, and SVG) for the same subject, with a null `recovery_target`; any other refusal exits 1 and pushes nothing.
+The historical bytes are written unchanged, so the manifest keeps its original `source_commit`, and the commit replaces only the three owned root entries of the head tree and keeps every other root entry.
+The new commit's only parent is the expected parent, its subject is `Restore terrarium bundle from <12-character SHA>`, and it carries a `Restored-From: <SHA>` trailer; the push uses the same lease as `publish`, so history is never rewritten.
+The restore skips the backwards-date and growth-superset checks of `publish`; this is the only path that may move the output dates backwards, and `publish` and `generate` keep rejecting backwards dates.
+Owned files byte-identical to the head's produce `no-change` with no commit or push.
+Readback uses a fresh temporary repository and requires the new commit as the head with a valid bundle whose hashes match the restored files; a mismatch after a successful push exits 1 and names the pushed commit.
+Success prints canonical JSON with `commit`, `outcome` (`restored` or `no-change`), `parent`, `restored_from`, and `sha256` of all three files.
+The next `generate` treats the restored state as its prior state and follows the normal interval and gap rules, so it collects `[min(D - 30 days, restored last complete day + 1), D)`, credits popularity only against the restored watermarks on its own observation date, and fails over 90 days with the `grow --recover-through` instruction.
+
 ## GitHub Actions boundary
 
 The generation workflow has `schedule` and `workflow_dispatch` triggers only and runs trusted default-branch code.
@@ -312,7 +325,7 @@ Publisher tests use local bare remotes to prove atomic commits, clean no-ops, mi
 Browser tests embed the SVG through an HTML `img`; opening the SVG document directly is insufficient.
 Capture normal and reduced-motion states, narrow layouts, and at least two time-separated frames; perform a final GitHub README smoke test before release.
 
-Recovery restores a verified prior state through a new output commit, never by rewriting branch history.
+Recovery restores a verified prior state through a new output commit, never by rewriting branch history; the `restore` command in [Atomic publication](#atomic-publication) is that operation.
 Unsupported schema/scoring changes require an explicit migration plan and fixture proof before rollout.
 An intentional new-user reset is outside routine generation and requires retaining the old output history.
 

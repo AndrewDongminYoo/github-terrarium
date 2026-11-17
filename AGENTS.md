@@ -15,7 +15,7 @@ Generate a personalized, animated SVG terrarium from public GitHub activity and 
 
 ## Boundaries
 
-- This repository has a complete read-only public collector, local persistent-growth reconciliation, `render`/`validate_svg` Python APIs, offline output-bundle build/validation, a low-level `publish` command, a `generate` command that publishes with one conflict recollection, and a guarded `generate.yml` workflow; live output was first published by a manual bootstrap on 2026-11-17, but do not claim a verified scheduled run or later-day transition.
+- This repository has a complete read-only public collector, local persistent-growth reconciliation, `render`/`validate_svg` Python APIs, offline output-bundle build/validation, a low-level `publish` command, a `generate` command that publishes with one conflict recollection, a manual `restore` command, and a guarded `generate.yml` workflow; live output was first published by a manual bootstrap on 2026-11-17, but do not claim a verified scheduled run or later-day transition.
 - Keep durable source and documentation on `main`; publish generated images and growth state together on `output` after implementation.
 - Treat incomplete collection as failure, never as zero activity.
 - Keep scoring and rendering deterministic, and prevent repeated runs from earning duplicate growth.
@@ -27,4 +27,4 @@ Generate a personalized, animated SVG terrarium from public GitHub activity and 
 
 For documentation changes, check relative links, examples, and `git diff --check`.
 Run `python -m unittest discover -s tests -v`, `ruff check src tests tools`, and `ruff format --check src tests tools` in the installed Python 3.12 environment.
-The `probe`, `collect`, offline `grow`, `build`, `validate`, `publish`, and `generate` commands exist; publisher and generator tests use local bare remotes and fake collectors.
+The `probe`, `collect`, offline `grow`, `build`, `validate`, `publish`, `generate`, and `restore` commands exist; publisher, generator, and restore tests use local bare remotes and fake collectors.
