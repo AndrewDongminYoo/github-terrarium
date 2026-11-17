@@ -1,5 +1,9 @@
 # GitHub Terrarium
 
+<img src="https://raw.githubusercontent.com/AndrewDongminYoo/github-terrarium/output/terrarium.svg" alt="Animated paper-cut terrarium grown from AndrewDongminYoo's public GitHub activity, labeled with its last complete UTC activity day">
+
+**Generated habitat:** the [daily workflow](#daily-workflow) publishes this image to the [`output` branch](https://github.com/AndrewDongminYoo/github-terrarium/tree/output) under a stable URL; its label reads "Activity through" the last complete UTC day, and a viewer can still see an earlier copy for a while (see [freshness and caching](#freshness-and-caching)).
+
 ![Animated paper-cut terrarium design sample](assets/references/terrarium-papercut-sanctuary.svg)
 
 **Design preview:** This fixed animated SVG sample uses synthetic data and is not generated from live GitHub activity.
@@ -232,12 +236,105 @@ Success prints one JSON result with the outcome, the restored-from commit, the n
 
 [`generate.yml`](.github/workflows/generate.yml) runs `generate` at 00:23 UTC each day (09:23 Asia/Seoul) and on manual dispatch from the default branch; the [GitHub Actions boundary](docs/specs/architecture.md#github-actions-boundary) defines its triggers, permissions, and guards.
 
-- **Enabling:** the schedule is active once the workflow is on the default branch. Scheduled runs fail with "Output branch is absent" until one manual run creates the habitat (Actions → Daily generation → Run workflow on the default branch, with `bootstrap` checked); that bootstrap ran on 2026-11-17, so `output` now exists.
+- **Configuration:** `terrarium.toml` holds only the target `login`. A fork or a copy also changes the `github.repository == 'AndrewDongminYoo/github-terrarium'` guard in `generate.yml`, without which the job skips every step, and the owner and name in the embed URL at the top of this README, together with the `REPOSITORY` constant in `tests/test_workflow.py` and the `EMBED` constant in `tests/test_readme.py` that pin them.
+- **Enabling:** the schedule is active once the workflow is on the default branch. Scheduled runs fail with "Output branch is absent" until one manual run creates the habitat (Actions → Daily generation → Run workflow on the default branch, with `bootstrap` checked); that bootstrap ran on 2026-11-17, so `output` now exists. A fork or a new repository runs the same dispatch once. `bootstrap` works only while `output` is absent, an `output` branch without a valid bundle fails every run, and no command deletes or resets the branch; an intentional new-user reset is outside routine generation, as the [technical design](docs/specs/architecture.md#verification-and-recovery) states.
 - **Manual reruns:** run the workflow again with `bootstrap` unchecked. The manifest records the source commit, so a rerun reports `no-change` and pushes nothing only when it collects nothing new and the default branch has not moved since the last publication; otherwise it publishes a new `output` commit. A dispatch from another branch skips the job.
 - **Token:** the job uses only the repository `GITHUB_TOKEN` with `contents: write`; no personal token or secret is needed, and none is created or rotated.
 - **Output URLs:** after the bootstrap, the image is `https://raw.githubusercontent.com/AndrewDongminYoo/github-terrarium/output/terrarium.svg`, next to `state.json` and `manifest.json` on the [`output` branch](https://github.com/AndrewDongminYoo/github-terrarium/tree/output).
-- **Delays and disablement:** GitHub can start scheduled runs late or drop them, and disables schedules in a public repository after 60 days without repository activity; re-enable the workflow on the Actions page. A missed day is collected by the next run, and a delay is not inactivity.
-- **Failures and recovery:** read the job summary; a failed run leaves the last valid habitat unchanged. A gap over 90 days or an unfinished recovery needs `grow --recover-through` batches, and the workflow never resets or bootstraps over an existing branch. To roll back to an earlier valid bundle, run [`restore`](#restore-a-historical-bundle) by hand; the workflow never restores.
+- **Delays and disablement:** GitHub can start scheduled runs late or drop them, and disables schedules in a public repository after 60 days without repository activity; re-enable the workflow on the Actions page; the next scheduled run or a manual dispatch resumes generation. The generated commits on `output` are not assumed to prevent disablement. A missed day is collected by the next run, and a delay is not inactivity.
+- **Failures and recovery:** read the job summary; a run that fails before its push leaves the last valid habitat unchanged, while a [readback failure after a successful push](#publish-a-bundle) leaves the pushed commit on `output`. A gap over 90 days or an unfinished recovery needs `grow --recover-through` batches, and the workflow never resets or bootstraps over an existing branch. To roll back to an earlier valid bundle, run [`restore`](#restore-a-historical-bundle) by hand; the workflow never restores. [Rehearse recovery locally](#rehearse-recovery-locally) shows each case.
+
+### Freshness and caching
+
+The image label and the manifest's `complete_activity_day` name the last complete UTC activity day, which is the day before the run; the manifest's `stock_observation_day` is the run's own UTC date, on which stars and forks were read.
+After a dropped or failed run, the published label stays on the earlier day until the next successful run, which also collects the missed days, so no growth is lost.
+GitHub serves the image through caches, so a reader can see the previous image for a while after a publication; the `manifest.json` on `output` is the authority for what was published.
+Keep the URL stable: a query string or another cache-busting URL is not supported.
+
+## Rehearse recovery locally
+
+These commands run from the checkout root against synthetic snapshots and a local bare remote in the ignored `work/recovery/` directory; they need no token and never reach GitHub.
+In production, each snapshot comes from [`collect`](#collect-daily-activity) with `--expected-subject` and the same `--start`/`--end`, and its `observed_on` is the collection date; recovery starts from the `state.json` on `output`, and the recovered bundle goes out with [`publish`](#publish-a-bundle) over the current head.
+
+```bash
+mkdir -p work/recovery
+python - <<'PYTHON'
+import json
+from datetime import date, timedelta
+from pathlib import Path
+
+
+def write(name, start, end, observed, stars):
+    start, end = date.fromisoformat(start), date.fromisoformat(end)
+    days = {
+        (start + timedelta(days=n)).isoformat(): {"issues": 0, "prs": 1, "reviews": 0}
+        for n in range((end - start).days)
+    }
+    snapshot = {
+        "activity_end": end.isoformat(),
+        "activity_start": start.isoformat(),
+        "complete_snapshot": True,
+        "days": days,
+        "observed_on": observed,
+        "repositories": {"R1": {"forks": 0, "stars": stars}},
+        "schema_version": 1,
+        "subject": {"id": "U1", "login": "octocat"},
+    }
+    text = json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    Path("work/recovery", name).write_text(text)
+
+
+write("bounded.json", "2026-11-15", "2027-01-15", "2027-01-15", 3)
+write("batch-1.json", "2026-11-15", "2027-01-15", "2027-03-15", 9)
+write("batch-2.json", "2027-01-15", "2027-03-15", "2027-03-15", 9)
+write("fresh.json", "2027-02-13", "2027-03-15", "2027-03-15", 9)
+PYTHON
+cd work/recovery
+python -m github_terrarium grow --snapshot ../../tests/fixtures/pull-requests.json --bootstrap > state.json
+```
+
+The bootstrap state is complete through 2026-11-14.
+A bounded gap needs no command: a run on 2027-01-15 collects `[2026-11-15, 2027-01-15)`, 61 days within the 90-day limit, and `generate` does it in one normal update.
+
+```bash
+python -m github_terrarium grow --snapshot bounded.json --state state.json > bounded-state.json
+```
+
+A run on 2027-03-15 would need 120 days, so a normal update fails with `Gap exceeds 90 days; use explicit recovery batches` and exit 1.
+Recover with contiguous batches of at most 90 days toward one fixed cutoff, each saved to its own file, then build the final normal snapshot on the recovered state; the [growth rules](#reconcile-local-growth) define the batches.
+
+```bash
+python -m github_terrarium grow --snapshot fresh.json --state state.json > refused.json || echo "refused: exit $?"
+python -m github_terrarium grow --snapshot batch-1.json --state state.json --recover-through 2027-03-15 > recovery-1.json
+python -m github_terrarium grow --snapshot batch-2.json --state recovery-1.json --recover-through 2027-03-15 > recovery-2.json
+python -m github_terrarium build --snapshot fresh.json --state recovery-2.json --bundle-dir recovered --source-commit "$(git rev-parse HEAD)"
+python -m github_terrarium validate --bundle-dir recovered
+```
+
+The last batch must end at the cutoff: until then, `grow` and `build` refuse a normal snapshot with `Finish explicit recovery before normal updates`, and `publish` refuses a state that records an unfinished cutoff.
+To rehearse publication and the append-only `restore`, seed a local bare remote with the bootstrap bundle, publish the recovered bundle over it, and restore the first bundle as a third commit:
+
+```bash
+git init --quiet --bare remote.git
+REMOTE="$PWD/remote.git"
+python -m github_terrarium build --snapshot ../../tests/fixtures/pull-requests.json --bootstrap --bundle-dir first --source-commit "$(git rev-parse HEAD)"
+python -m github_terrarium publish --bundle-dir first --repository octocat/terrarium --remote "$REMOTE" --expected-parent absent --bootstrap
+python -m github_terrarium publish --bundle-dir recovered --repository octocat/terrarium --remote "$REMOTE" --expected-parent "$(git ls-remote "$REMOTE" refs/heads/output | cut -f1)"
+python -m github_terrarium restore --repository octocat/terrarium --remote "$REMOTE" --from-commit "$(git --git-dir="$REMOTE" rev-parse output~1)" --expected-parent "$(git ls-remote "$REMOTE" refs/heads/output | cut -f1)"
+git --git-dir="$REMOTE" log --oneline output
+```
+
+Pass `--remote` as an absolute path, because publication runs Git in a temporary directory.
+Missing or corrupt state is refused, never replaced: each of these exits 1 with one error line and leaves its inputs unchanged.
+
+```bash
+printf '{}' > corrupt.json
+python -m github_terrarium grow --snapshot bounded.json --state corrupt.json > out.json || echo "refused: exit $?"
+python -m github_terrarium grow --snapshot bounded.json --state missing.json > out.json || echo "refused: exit $?"
+```
+
+The same refusal applies to an `output` branch that exists without a valid bundle: `generate`, `publish`, and `restore` fail without resetting it.
+Return to the checkout root and remove `work/recovery/` when done.
 
 ## Planned experience
 
@@ -255,6 +352,7 @@ Success prints one JSON result with the outcome, the restored-from commit, the n
 | [Technical design](docs/specs/architecture.md) | Collection, persistent state, SVG rendering, daily publication, and failure recovery |
 | [Implementation plan](docs/plans/implementation.md) | Ordered milestones, intended files, tests, and release gates |
 | [Contribution guide](CONTRIBUTING.md) | Current workflow and project boundaries |
+| [Verification notes](docs/notes/) | Dated evidence for collection, growth, rendering, validation, the gallery, and publication |
 
 ## Repository layout
 
