@@ -33,12 +33,16 @@ Read output data as untrusted structured data; never import code or execute scri
 main/
 ├── pyproject.toml
 ├── terrarium.toml
-├── tools/extract_papercut_assets.py
+├── tools/
+│   ├── ci_bundles.py
+│   ├── extract_papercut_assets.py
+│   └── gallery.py
 ├── src/github_terrarium/
 │   ├── __main__.py
 │   ├── config.py
 │   ├── github.py
 │   ├── models.py
+│   ├── probe.py
 │   ├── normalize.py
 │   ├── growth.py
 │   ├── state.py
@@ -60,7 +64,7 @@ output/
 └── manifest.json
 ```
 
-`generate.yml` and a live `output` branch are planned (not implemented); the other source paths exist.
+Every source path above exists, and the first bootstrap created the live `output` branch on 2026-11-17.
 Keep output files at the branch root so the embedding URL remains stable.
 Do not implement a configurable output branch in v1; use `output` consistently.
 
