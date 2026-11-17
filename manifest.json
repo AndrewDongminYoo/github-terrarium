@@ -1,0 +1,14 @@
+{
+  "complete_activity_day": "2026-11-16",
+  "manifest_version": 1,
+  "renderer_version": 3,
+  "schema_version": 1,
+  "scoring_version": 1,
+  "sha256": {
+    "state.json": "4b8380cc8bd530fe4f0a8ad9f8fb51e76618b2dcef8faa36d32d16caa4500a60",
+    "terrarium.svg": "2b8dfd63dc6564a8afd69dfa0ea3573cd55ec1e2ce9c58ec21ce0a9b2cf5b2d9"
+  },
+  "source_commit": "701ebb5c754bc28b3936a2b299472d2ab14e9a35",
+  "stock_observation_day": "2026-11-17",
+  "subject_id": "MDQ6VXNlcjgyOTk5NzE1"
+}

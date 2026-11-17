@@ -1,0 +1,674 @@
+{
+  "current_traits": {
+    "forks": 38,
+    "issues": 216,
+    "prs": 839,
+    "reviews": 0,
+    "stars": 136
+  },
+  "days": {
+    "2026-10-18": {
+      "activity_xp_awarded": 63,
+      "issues": 1,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 13,
+      "reviews": 0
+    },
+    "2026-10-19": {
+      "activity_xp_awarded": 75,
+      "issues": 6,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 11,
+      "reviews": 0
+    },
+    "2026-10-20": {
+      "activity_xp_awarded": 60,
+      "issues": 0,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 7,
+      "reviews": 0
+    },
+    "2026-10-21": {
+      "activity_xp_awarded": 66,
+      "issues": 2,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 11,
+      "reviews": 0
+    },
+    "2026-10-22": {
+      "activity_xp_awarded": 60,
+      "issues": 0,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 64,
+      "reviews": 0
+    },
+    "2026-10-23": {
+      "activity_xp_awarded": 75,
+      "issues": 7,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 8,
+      "reviews": 0
+    },
+    "2026-10-24": {
+      "activity_xp_awarded": 75,
+      "issues": 16,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 33,
+      "reviews": 0
+    },
+    "2026-10-25": {
+      "activity_xp_awarded": 75,
+      "issues": 20,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 45,
+      "reviews": 0
+    },
+    "2026-10-26": {
+      "activity_xp_awarded": 75,
+      "issues": 28,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 33,
+      "reviews": 0
+    },
+    "2026-10-27": {
+      "activity_xp_awarded": 72,
+      "issues": 4,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 58,
+      "reviews": 0
+    },
+    "2026-10-28": {
+      "activity_xp_awarded": 60,
+      "issues": 0,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 15,
+      "reviews": 0
+    },
+    "2026-10-29": {
+      "activity_xp_awarded": 75,
+      "issues": 5,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 72,
+      "reviews": 0
+    },
+    "2026-10-30": {
+      "activity_xp_awarded": 66,
+      "issues": 2,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 19,
+      "reviews": 0
+    },
+    "2026-10-31": {
+      "activity_xp_awarded": 75,
+      "issues": 26,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 16,
+      "reviews": 0
+    },
+    "2026-11-01": {
+      "activity_xp_awarded": 63,
+      "issues": 1,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 29,
+      "reviews": 0
+    },
+    "2026-11-02": {
+      "activity_xp_awarded": 75,
+      "issues": 7,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 32,
+      "reviews": 0
+    },
+    "2026-11-03": {
+      "activity_xp_awarded": 63,
+      "issues": 1,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 5,
+      "reviews": 0
+    },
+    "2026-11-04": {
+      "activity_xp_awarded": 60,
+      "issues": 0,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 25,
+      "reviews": 0
+    },
+    "2026-11-05": {
+      "activity_xp_awarded": 60,
+      "issues": 0,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 99,
+      "reviews": 0
+    },
+    "2026-11-06": {
+      "activity_xp_awarded": 75,
+      "issues": 5,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 10,
+      "reviews": 0
+    },
+    "2026-11-07": {
+      "activity_xp_awarded": 66,
+      "issues": 2,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 10,
+      "reviews": 0
+    },
+    "2026-11-08": {
+      "activity_xp_awarded": 75,
+      "issues": 48,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 27,
+      "reviews": 0
+    },
+    "2026-11-09": {
+      "activity_xp_awarded": 75,
+      "issues": 5,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 38,
+      "reviews": 0
+    },
+    "2026-11-10": {
+      "activity_xp_awarded": 75,
+      "issues": 9,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 47,
+      "reviews": 0
+    },
+    "2026-11-11": {
+      "activity_xp_awarded": 69,
+      "issues": 3,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 18,
+      "reviews": 0
+    },
+    "2026-11-12": {
+      "activity_xp_awarded": 24,
+      "issues": 0,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 2,
+      "reviews": 0
+    },
+    "2026-11-13": {
+      "activity_xp_awarded": 75,
+      "issues": 6,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 31,
+      "reviews": 0
+    },
+    "2026-11-14": {
+      "activity_xp_awarded": 60,
+      "issues": 0,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 14,
+      "reviews": 0
+    },
+    "2026-11-15": {
+      "activity_xp_awarded": 75,
+      "issues": 10,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 28,
+      "reviews": 0
+    },
+    "2026-11-16": {
+      "activity_xp_awarded": 66,
+      "issues": 2,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": 19,
+      "reviews": 0
+    },
+    "2026-11-17": {
+      "activity_xp_awarded": 0,
+      "issues": null,
+      "new_fork_units": 0,
+      "new_star_units": 0,
+      "popularity_xp_awarded": 0,
+      "prs": null,
+      "reviews": null
+    }
+  },
+  "last_complete_activity_day": "2026-11-16",
+  "last_popularity_observation_day": "2026-11-17",
+  "recovery_target": null,
+  "repository_watermarks": {
+    "R_kgDOGGcHxw": {
+      "forks": 1,
+      "stars": 3
+    },
+    "R_kgDOGlACfQ": {
+      "forks": 3,
+      "stars": 3
+    },
+    "R_kgDOGqtD_g": {
+      "forks": 1,
+      "stars": 2
+    },
+    "R_kgDOI39O5A": {
+      "forks": 21,
+      "stars": 48
+    },
+    "R_kgDOI3P3CA": {
+      "forks": 4,
+      "stars": 6
+    },
+    "R_kgDOIvJzoQ": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOIzGh8g": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOKtKq_w": {
+      "forks": 0,
+      "stars": 2
+    },
+    "R_kgDOM8KWOA": {
+      "forks": 2,
+      "stars": 1
+    },
+    "R_kgDOMY7rRw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDONRqlQw": {
+      "forks": 1,
+      "stars": 3
+    },
+    "R_kgDONjilaw": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDONkPQ_g": {
+      "forks": 0,
+      "stars": 4
+    },
+    "R_kgDOO2TxhQ": {
+      "forks": 1,
+      "stars": 4
+    },
+    "R_kgDOONJ-dw": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOOV-W8w": {
+      "forks": 1,
+      "stars": 5
+    },
+    "R_kgDOQ-9Xeg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOQ0FoSw": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOQ0hT3g": {
+      "forks": 1,
+      "stars": 4
+    },
+    "R_kgDOQ1PPtA": {
+      "forks": 0,
+      "stars": 5
+    },
+    "R_kgDOQBgfWw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOR1gBlw": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOR2hyXw": {
+      "forks": 0,
+      "stars": 3
+    },
+    "R_kgDOR3vtCw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDORD7OSg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDORXTFkg": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOR_FPmA": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDORuTI7w": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOS5SWvg": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOS6448Q": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSCC9Sw": {
+      "forks": 0,
+      "stars": 2
+    },
+    "R_kgDOSIaPPQ": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSKKzdg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSLYNPQ": {
+      "forks": 1,
+      "stars": 2
+    },
+    "R_kgDOSM9xzA": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOSNpTEA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSQYWlw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSQisdA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSRT9tw": {
+      "forks": 0,
+      "stars": 6
+    },
+    "R_kgDOSWjU1w": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSWjVHA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSe0M_A": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSr8tLA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSsRwEQ": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSsnQ6g": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOSz9TGg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOT0t2-Q": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOT44LpA": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOT4Ks-Q": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOT5D_-w": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOT5D_oA": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOT85zXA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOT8F3fw": {
+      "forks": 1,
+      "stars": 3
+    },
+    "R_kgDOT9PMkg": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOTRRO7g": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOTVOw9A": {
+      "forks": 0,
+      "stars": 2
+    },
+    "R_kgDOTY0jng": {
+      "forks": 0,
+      "stars": 2
+    },
+    "R_kgDOTYzRRA": {
+      "forks": 0,
+      "stars": 2
+    },
+    "R_kgDOTZ3vkA": {
+      "forks": 0,
+      "stars": 3
+    },
+    "R_kgDOTZ8GdA": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOT_cv8w": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOTaBYRw": {
+      "forks": 0,
+      "stars": 2
+    },
+    "R_kgDOTbA1Lw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOTi1xeQ": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOTj-mag": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOTpXIYQ": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOU-9Faw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOU2V3ww": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOU51-SQ": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUDngqQ": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUGnwLg": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOUIjKKg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOULdoSg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUMrRCg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUTQELw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUUKMVA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUWXSyw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUktPAg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUlUQRw": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUrDn4A": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOUtzwNg": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOUuOkJg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVA-KhA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVAPafw": {
+      "forks": 0,
+      "stars": 1
+    },
+    "R_kgDOVBqFmg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVGnYIg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVPPA5w": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVVhUUA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVXjWXA": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVcrGUg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVe1_Kg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVfjiBg": {
+      "forks": 0,
+      "stars": 0
+    },
+    "R_kgDOVftvzg": {
+      "forks": 0,
+      "stars": 0
+    }
+  },
+  "schema_version": 1,
+  "scoring_version": 1,
+  "subject": {
+    "id": "MDQ6VXNlcjgyOTk5NzE1",
+    "login": "AndrewDongminYoo",
+    "seed_version": 1
+  }
+}
