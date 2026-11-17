@@ -86,7 +86,7 @@ Traceability: AC-02, AC-06, and AC-11.
 
 ## Milestone 6: daily GitHub Actions integration
 
-- [ ] Add read-only `ci.yml` for the declared unit, formatting, lint, and fixture-validation commands.
+- [x] Add read-only `ci.yml` for the declared unit, formatting, lint, and fixture-validation commands.
 - [ ] Add `generate.yml` with default-branch-only `workflow_dispatch`, the 00:23 UTC schedule, a bounded job timeout, and serialized publication with cancellation disabled.
 - [ ] Set publication permissions at the job level, pin actions to verified commit SHAs, and keep PR validation away from write credentials.
 - [ ] Connect collection, previous-state loading, building, validation, publication, and concise failure summaries.

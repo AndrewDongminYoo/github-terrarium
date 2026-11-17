@@ -16,8 +16,8 @@ Start with the [implementation plan](docs/plans/implementation.md) and its linke
 
 Documentation changes require valid relative links, consistent examples, and `git diff --check`.
 Install the package and development tools as described in README.md.
-Run the unit tests, Ruff lint, and Ruff formatting checks before submitting code.
-Tests are offline; live API collection is a separate verification step and also runs on trusted CI pushes.
+Run the unit tests, Ruff lint, Ruff formatting checks, and `python tools/ci_bundles.py` before submitting code; CI runs them and the fixture gallery on every pull request.
+Tests are offline; live API collection is a separate verification step and runs in CI only on `main`, as the [GitHub Actions boundary](docs/specs/architecture.md#github-actions-boundary) defines.
 Future runtime verification is described in the implementation plan and must not be reported as passing until implemented and run.
 
 ## Commits
