@@ -191,7 +191,7 @@ An existing branch must hold a valid bundle for the same subject, and the candid
 When all three files are byte-identical to the parent, nothing is pushed and the result reports `no-change`.
 After a push, a fresh fetch must show the new commit as the remote head with matching file hashes before `published` is reported.
 The token comes only from `GH_TOKEN` or `GITHUB_TOKEN` and reaches Git through environment-scoped configuration, never through arguments, remote URLs, or commits; `--remote URL` overrides the default `https://github.com/OWNER/NAME.git` for local tests.
-Success prints a canonical JSON result; failures exit 1 with no stdout, a remote head that differs from the expected parent or a rejected push exits 3, and usage errors exit 2.
+Success prints a canonical JSON result; failures exit 1 with no stdout, a remote head that is absent or differs from a SHA expected parent, or a rejected push, exits 3, and usage errors exit 2.
 A failed readback after a successful push exits 1 and names the pushed commit.
 `generate` below fetches fresh data and retries once after a conflict.
 

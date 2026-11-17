@@ -249,7 +249,7 @@ It revalidates the candidate bundle, rejects a candidate state with a non-null `
 All Git calls run in a temporary bare repository with inherited `GIT_*` variables, system and global configuration, and terminal prompts disabled.
 A token from `GH_TOKEN` or `GITHUB_TOKEN` is passed only as an environment-scoped `http.https://github.com/.extraheader`.
 The push carries `--force-with-lease=refs/heads/output:<expected parent>`, or an empty lease for a bootstrap, so a head moved, rewound, or deleted after the lookup rejects the push; the new commit always descends from the expected parent, so an accepted push is a fast-forward or a branch creation.
-A head different from `--expected-parent`, before or during the fetch, or a push rejected by the lease or as non-fast-forward is a conflict with exit status 3; a hook or protection rejection is an ordinary failure.
+An absent branch under a SHA `--expected-parent`, a head different from `--expected-parent`, before or during the fetch, or a push rejected by the lease or as non-fast-forward is a conflict with exit status 3; a hook or protection rejection is an ordinary failure.
 An existing output commit must hold the three owned paths as regular files that validate as a bundle for the same subject, with candidate activity and popularity dates no earlier than its state's dates.
 The candidate state must keep that state's growth at equal or later dates: it requires every existing day and repository watermark with no award, popularity unit, or watermark lowered, because a same-day re-run may raise stars or correct activity counts.
 The commit replaces only the three owned root entries, keeps every other root entry by object ID, and uses a fixed `github-terrarium` identity without signing.
