@@ -15,7 +15,7 @@ Generate a personalized, animated SVG terrarium from public GitHub activity and 
 
 ## Boundaries
 
-- This repository has a complete read-only public collector, local persistent-growth reconciliation, `render`/`validate_svg` Python APIs, offline output-bundle build/validation, a low-level `publish` command, a `generate` command that publishes with one conflict recollection, and a guarded `generate.yml` workflow; do not claim published live output or a verified scheduled run.
+- This repository has a complete read-only public collector, local persistent-growth reconciliation, `render`/`validate_svg` Python APIs, offline output-bundle build/validation, a low-level `publish` command, a `generate` command that publishes with one conflict recollection, and a guarded `generate.yml` workflow; live output was first published by a manual bootstrap on 2026-11-17, but do not claim a verified scheduled run or later-day transition.
 - Keep durable source and documentation on `main`; publish generated images and growth state together on `output` after implementation.
 - Treat incomplete collection as failure, never as zero activity.
 - Keep scoring and rendering deterministic, and prevent repeated runs from earning duplicate growth.

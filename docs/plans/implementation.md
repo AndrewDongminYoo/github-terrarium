@@ -1,6 +1,6 @@
 # GitHub Terrarium Implementation Plan
 
-Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, offline output-bundle build/validation, output publication, and `generate` orchestration with one conflict recollection implemented; the fixture gallery visual direction was approved on 2026-11-16, and the Actions workflows are next.
+Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, offline output-bundle build/validation, output publication, and `generate` orchestration with one conflict recollection implemented; the fixture gallery visual direction was approved on 2026-11-16; the Actions workflows are added, and the first manual publication and same-day replay were verified on 2026-11-17, while a scheduled run and a later-day transition are not yet observed.
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
 The initial documentation bootstrap is complete; runtime implementation has started.
