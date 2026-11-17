@@ -128,7 +128,7 @@ It defines the target composition and art treatment; its fixed login, dates, and
 The reference is separate from packaged runtime assets and is not loaded by the renderer.
 Renderer version 3 assembles extracted paper-cut pieces under the [port plan](../plans/2026-11-16-papercut-renderer.md), with low/high activity comparisons and state-driven stages and traits.
 The fixed reference banner was verified in the public repository README; this does not establish GitHub playback of generated output or complete the fixture-gallery and visual-approval gates.
-Source and artwork licensing remain subject to the release license decision.
+Source code and original artwork are released under the [MIT License](../../LICENSE).
 
 ### Scene format and motion
 
@@ -174,7 +174,6 @@ GitHub caching may delay the display of a new image; animation playback itself d
 
 ## Pending release decisions
 
-Select a repository license before the first reusable code/art release; public visibility is not a license choice.
 Review the generated paper-cut scenes across growth stages and activity personas with the operator before accepting the renderer port or expanding artwork.
 Calibrate scoring constants and performance budgets using the first implementation; change scoring only through a versioned migration decision.
 The architecture and implementation order are defined in [the technical design](architecture.md) and [the plan](../plans/implementation.md).

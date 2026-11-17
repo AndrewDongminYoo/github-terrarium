@@ -7,6 +7,8 @@ name = "github-terrarium"
 version = "0.1.0"
 description = "An SVG habitat grown from public GitHub activity"
 requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
 
 [project.scripts]
 github-terrarium = "github_terrarium.__main__:main"
@@ -19,7 +21,10 @@ github_terrarium = "src/github_terrarium"
 "github_terrarium.art" = "assets/terrarium"
 
 [tool.setuptools.package-data]
-"github_terrarium.art" = ["*.svg"]
+"github_terrarium.art" = ["papercut.svg"]
+
+[tool.setuptools.exclude-package-data]
+"github_terrarium.art" = ["botanical.svg"]
 
 [tool.ruff]
 target-version = "py312"
