@@ -23,5 +23,6 @@ The leaf, flower, mushroom, seedling, and pond-creature paths were constructed d
 Renderer versions 1 and 2 loaded these definitions through `github_terrarium.art`, with a parameterized vessel, soil, stems, ground cover, pond, and fireflies.
 The current renderer uses `papercut.svg`; the earlier primitives remain as historical artwork.
 
-This file records provenance, not a license grant or final visual approval.
-Source and artwork licensing remains subject to issues #21 and #22; the complete generated-scene gallery is reviewed separately in #13.
+Both files are released under the repository [MIT License](../../LICENSE) selected in #21.
+Installed wheels ship only `papercut.svg`; `botanical.svg` stays in the repository and is not packaged.
+This file records provenance, not final visual approval; the complete generated-scene gallery is reviewed separately in #13.

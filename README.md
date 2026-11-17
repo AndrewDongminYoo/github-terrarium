@@ -253,4 +253,5 @@ The planned default schedule is 00:23 UTC each day (09:23 Asia/Seoul), subject t
 
 ## License
 
-A license has not been selected yet.
+Source code and original artwork are released under the [MIT License](LICENSE).
+Artwork provenance is recorded in [the asset notes](assets/terrarium/README.md).

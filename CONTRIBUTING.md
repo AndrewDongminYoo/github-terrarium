@@ -9,6 +9,7 @@ Start with the [implementation plan](docs/plans/implementation.md) and its linke
 - Update affected specifications when behavior changes.
 - Use synthetic public-data fixtures; never commit tokens or private repository data.
 - Do not copy code or artwork from another repository without checking its license.
+- Contributions are accepted under the [MIT License](LICENSE).
 - Keep `output` reserved for generated files; edit generators on `main`.
 
 ## Verification

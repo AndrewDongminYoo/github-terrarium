@@ -103,7 +103,7 @@ Traceability: AC-04, AC-06, AC-10, and AC-11.
 - [ ] Verify animation through GitHub's rendered image, freshness labeling, caching behavior, and mobile-width readability.
 - [ ] Measure real rendering behavior for the richest fixture and record devices/browsers used; reduce expensive detail if the initial budget is insufficient.
 - [ ] Calibrate the proposed scoring constants against the fixture gallery and freeze scoring version 1 before ongoing production growth.
-- [ ] Select a license with the operator before distributing reusable code/art and retain provenance for any adopted material.
+- [x] Select a license with the operator before distributing reusable code/art and retain provenance for any adopted material.
 - [ ] Update README status, setup steps, actual commands, and recovery instructions; preserve visible review and verification evidence with the release work.
 
 Acceptance: AC-01 through AC-12 have recorded evidence, the visual direction is approved, and one real scheduled transition is observed.
