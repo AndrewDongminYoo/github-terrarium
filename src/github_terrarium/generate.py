@@ -121,6 +121,47 @@ def _attempt(config, repo, commit, *, bootstrap, remote, token, clock, collector
     }
 
 
+def summary_markdown(result=None, *, code=0, message=None, token=None):
+    """Return a Markdown job summary for a `generate` result or failure.
+
+    A failure passes `code` and the one-line `message` the CLI printed. Only
+    result fields and that message are written, and any `token` value is
+    replaced by `***`.
+    """
+    if result is None:
+        outcome = "failure"
+        rows = [("Outcome", f"`{outcome}`"), ("Exit code", str(code))]
+        line = " ".join(str(message).split())
+        body = f"\n~~~text\n{line}\n~~~\n"
+    else:
+        outcome = result["outcome"]
+        interval = result["activity_interval"]
+        rows = [
+            ("Outcome", f"`{outcome}`"),
+            ("Subject ID", f"`{result['subject_id']}`"),
+            ("Activity interval", f"{interval['start']} to {interval['end']}"),
+            ("Recovered gap days", str(result["recovered_gap_days"])),
+            ("Stock observation day", result["stock_observation_day"]),
+            ("XP delta", str(result["xp_delta"])),
+        ]
+        rows += [
+            (f"`{name}` bytes", str(size)) for name, size in result["bytes"].items()
+        ]
+        rows += [
+            ("Output commit", f"`{result['commit']}`"),
+            ("Attempts", str(result["attempts"])),
+        ]
+        body = ""
+    table = "\n".join(f"| {name} | {value} |" for name, value in rows)
+    text = (
+        f"### Terrarium generation: {outcome}\n\n"
+        f"| Field | Value |\n| --- | --- |\n{table}\n{body}\n"
+    )
+    if token:
+        text = text.replace(token, "***")
+    return text
+
+
 def generate(
     config,
     repo,

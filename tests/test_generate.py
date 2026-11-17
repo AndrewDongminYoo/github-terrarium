@@ -387,7 +387,9 @@ class GenerateTests(Remote, unittest.TestCase):
         self.assertEqual(self.head(), first)
 
 
-class GenerateCommandTests(Remote, unittest.TestCase):
+class Command(Remote):
+    """Run the `generate` command against the local remote and fakes."""
+
     def setUp(self):
         super().setUp()
         self.config = self.root / "terrarium.toml"
@@ -420,6 +422,8 @@ class GenerateCommandTests(Remote, unittest.TestCase):
             )
         return code, output.getvalue(), error.getvalue()
 
+
+class GenerateCommandTests(Command, unittest.TestCase):
     def test_cli_success_prints_one_canonical_summary(self):
         code, out, err = self.run_cli(
             Collector(), "--bootstrap", clock=date(2026, 1, 15)
@@ -509,6 +513,102 @@ class GenerateCommandTests(Remote, unittest.TestCase):
         self.assertEqual(git("-C", str(source), "show-ref"), refs)
         self.assert_valid_remote(newer[0])
         self.assertEqual(self.parent(newer[0]), published[0])
+
+
+TOKEN = "ghs_summarySentinelToken0123456789"
+PRIOR = "## Earlier step\n\nkept\n"
+
+
+class GenerateSummaryTests(Command, unittest.TestCase):
+    """`generate --summary` appends one Markdown report per run."""
+
+    def run_summary(self, collector, *extra, clock=DAY):
+        path = self.root / "summary.md"
+        path.write_text(PRIOR, encoding="utf-8")
+        with patch.dict(os.environ, {"GH_TOKEN": TOKEN}):
+            result = self.run_cli(
+                collector, "--summary", str(path), *extra, clock=clock
+            )
+        text = path.read_text(encoding="utf-8")
+        self.assertTrue(text.startswith(PRIOR), "summary must append")
+        self.assertNotIn(TOKEN, text)
+        self.assertNotIn(TOKEN, result[1])
+        return (*result, text[len(PRIOR) :])
+
+    def test_published_summary_lists_the_pipeline_fields(self):
+        code, out, err, summary = self.run_summary(Collector(), "--bootstrap")
+        self.assertEqual((code, err), (0, ""))
+        result = json.loads(out)
+        self.assertEqual(
+            summary,
+            "### Terrarium generation: published\n\n"
+            "| Field | Value |\n| --- | --- |\n"
+            "| Outcome | `published` |\n"
+            "| Subject ID | `U1` |\n"
+            "| Activity interval | 2026-10-16 to 2026-11-15 |\n"
+            "| Recovered gap days | 0 |\n"
+            "| Stock observation day | 2026-11-15 |\n"
+            f"| XP delta | {result['xp_delta']} |\n"
+            f"| `state.json` bytes | {result['bytes'][STATE]} |\n"
+            f"| `terrarium.svg` bytes | {result['bytes'][SVG]} |\n"
+            f"| Output commit | `{self.head()}` |\n"
+            "| Attempts | 1 |\n\n",
+        )
+
+    def test_no_change_summary(self):
+        first = self.bootstrap()["commit"]
+        code, out, err, summary = self.run_summary(Collector())
+        self.assertEqual((code, err), (0, ""))
+        self.assertTrue(summary.startswith("### Terrarium generation: no-change\n"))
+        self.assertIn("| Outcome | `no-change` |\n", summary)
+        self.assertIn("| XP delta | 0 |\n", summary)
+        self.assertIn(f"| Output commit | `{first}` |\n", summary)
+        self.assertEqual(self.head(), first)
+
+    def test_conflict_summary_exits_three(self):
+        self.bootstrap()
+        first, _ = self.other_publisher(stars=20)
+        second, published = self.other_publisher(stars=30)
+        code, out, err, summary = self.run_summary(Collector(hooks=(first, second)))
+        self.assertEqual((code, out), (3, ""))
+        self.assertEqual(
+            summary,
+            "### Terrarium generation: failure\n\n"
+            "| Field | Value |\n| --- | --- |\n"
+            "| Outcome | `failure` |\n"
+            "| Exit code | 3 |\n"
+            f"\n~~~text\n{err.strip()}\n~~~\n\n",
+        )
+        self.assertTrue(err.startswith("conflict: "))
+        self.assert_valid_remote(published[0])
+
+    def test_absent_branch_summary_exits_one(self):
+        code, out, err, summary = self.run_summary(Collector())
+        self.assertEqual((code, out), (1, ""))
+        self.assertEqual(
+            err,
+            "error: Output branch is absent; rerun with --bootstrap to create "
+            "the habitat\n",
+        )
+        self.assertIn("| Outcome | `failure` |\n| Exit code | 1 |\n", summary)
+        self.assertIn(f"~~~text\n{err}~~~\n", summary)
+        self.assertIsNone(self.head())
+
+    def test_failure_message_redacts_the_token(self):
+        def leak():
+            raise ValueError(f"upstream said {TOKEN}\nsecond line")
+
+        self.bootstrap()
+        code, _, err, summary = self.run_summary(Collector(hooks=(leak,)))
+        self.assertEqual(code, 1)
+        self.assertIn("~~~text\nerror: upstream said *** second line\n~~~\n", summary)
+
+    def test_unwritable_summary_keeps_the_exit_code(self):
+        missing = self.root / "missing" / "summary.md"
+        code, out, err = self.run_cli(Collector(), "--summary", str(missing))
+        self.assertEqual((code, out), (1, ""))
+        self.assertTrue(err.startswith("error: Output branch is absent"))
+        self.assertIn("warning: summary not written:", err)
 
 
 if __name__ == "__main__":
