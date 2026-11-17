@@ -1,4 +1,4 @@
-"""Collection, offline growth, bundle, publication, and generation commands."""
+"""Collection, offline growth, bundle, publication, generation, and restore commands."""
 
 import argparse
 import os
@@ -14,7 +14,7 @@ from .growth import advance
 from .models import canonical_json
 from .normalize import collect
 from .probe import probe
-from .publish import PublishConflict, expected_parent, publish, repository
+from .publish import PublishConflict, expected_parent, publish, repository, restore
 from .state import read_json, validate_state
 
 
@@ -75,6 +75,13 @@ def main(argv=None):
     command.add_argument("--bootstrap", action="store_true")
     command.add_argument("--remote", help="Override the GitHub remote URL")
     command = commands.add_parser(
+        "restore", help="Restore a historical output bundle through a new commit"
+    )
+    command.add_argument("--repository", type=repository, required=True)
+    command.add_argument("--from-commit", type=source_commit, required=True)
+    command.add_argument("--expected-parent", type=source_commit, required=True)
+    command.add_argument("--remote", help="Override the GitHub remote URL")
+    command = commands.add_parser(
         "generate", help="Collect, grow, build, and publish with one conflict retry"
     )
     command.add_argument("--config", type=Path, required=True)
@@ -116,6 +123,16 @@ def main(argv=None):
                 args.repository,
                 args.expected_parent,
                 bootstrap=args.bootstrap,
+                remote=args.remote,
+                token=os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"),
+            )
+            print(canonical_json(result), end="")
+            return 0
+        if args.command == "restore":
+            result = restore(
+                args.repository,
+                args.from_commit,
+                args.expected_parent,
                 remote=args.remote,
                 token=os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"),
             )

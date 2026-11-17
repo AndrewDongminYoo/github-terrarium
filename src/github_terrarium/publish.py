@@ -1,4 +1,4 @@
-"""Publish a validated bundle to the `output` branch with isolated Git plumbing.
+"""Publish or restore a validated bundle on the `output` branch with isolated Git.
 
 Every Git call runs against a temporary bare repository with system, global,
 and inherited `GIT_*` settings removed, so the source checkout's HEAD, index,
@@ -12,7 +12,15 @@ import re
 import subprocess
 import tempfile
 
-from .bundle import LIMITS, OWNED, STATE, digest, read_bundle, validate_files
+from .bundle import (
+    LIMITS,
+    OWNED,
+    STATE,
+    digest,
+    read_bundle,
+    source_commit,
+    validate_files,
+)
 from .config import LOGIN, REPOSITORY
 
 BRANCH = "output"
@@ -162,18 +170,18 @@ def _tree(git, commit):
     return entries
 
 
-def _read_owned(git, commit, entries):
+def _read_owned(git, commit, entries, label="Existing output"):
     """Read the three owned files of an output commit with bounded reads."""
     files = {}
     for name in OWNED:
         if name not in entries:
-            raise ValueError(f"Existing output is missing {name}")
+            raise ValueError(f"{label} is missing {name}")
         mode, kind, sha = entries[name]
         if mode != "100644" or kind != "blob":
-            raise ValueError(f"Existing output {name} is not a regular file")
+            raise ValueError(f"{label} {name} is not a regular file")
         size = int(git("cat-file", "-s", sha))
         if size > LIMITS[name]:
-            raise ValueError(f"Existing output {name} exceeds its size budget")
+            raise ValueError(f"{label} {name} exceeds its size budget")
         files[name] = git("cat-file", "blob", sha)
     return files
 
@@ -366,3 +374,82 @@ def publish(bundle_dir, repo, parent, *, bootstrap=False, remote=None, token=Non
     if {name: digest(raw) for name, raw in published.items()} != hashes:
         raise ReadbackError(f"Pushed {commit} but remote file hashes differ")
     return {"commit": commit, "outcome": "published", "parent": base, "sha256": hashes}
+
+
+def restore(repo, source, parent, *, remote=None, token=None):
+    """Restore the bundle at `source` as a new child of the output head `parent`.
+
+    `source` must be a commit in the history of `parent` that holds a valid
+    bundle for the head's subject; its bytes are written unchanged, so dates
+    may move backwards here and only here. Raises PublishConflict when the
+    remote head is absent or not `parent` (never retried), ReadbackError when
+    the push succeeded but the remote did not read back as restored, and
+    ValueError for every other refusal.
+    """
+    repo = repository(repo)
+    source = source_commit(source)
+    parent = source_commit(parent)
+    remote = remote or f"https://github.com/{repo}.git"
+
+    with tempfile.TemporaryDirectory(prefix="terrarium-restore-") as directory:
+        git = _Git(directory, token)
+        head = _remote_head(git, remote)
+        if head is None:
+            raise PublishConflict(f"Output branch is absent, expected {parent}")
+        if head != parent:
+            raise PublishConflict(f"Output head is {head}, expected {parent}")
+        _fetch(git, remote, parent)
+        if (
+            git.run("cat-file", "-e", f"{source}^{{commit}}").returncode != 0
+            or git.run("merge-base", "--is-ancestor", source, parent).returncode != 0
+        ):
+            raise ValueError(f"Restore source {source} is not in the output history")
+        entries = _tree(git, parent)
+        try:
+            owned = _read_owned(git, parent, entries)
+            existing = validate_files(owned)
+        except ValueError as error:
+            raise ValueError(f"Existing output is invalid: {error}") from None
+        try:
+            files = _read_owned(git, source, _tree(git, source), "Bundle")
+            historical = validate_files(files)
+        except ValueError as error:
+            raise ValueError(
+                f"Historical bundle at {source} is invalid: {error}"
+            ) from None
+        if historical["subject_id"] != existing["subject_id"]:
+            raise ValueError("Historical bundle belongs to a different subject")
+        if json.loads(files[STATE])["recovery_target"] is not None:
+            raise ValueError("Historical state has an unfinished recovery_target")
+        hashes = {name: digest(files[name]) for name in OWNED}
+        if owned == files:
+            return {
+                "commit": parent,
+                "outcome": "no-change",
+                "parent": parent,
+                "restored_from": source,
+                "sha256": hashes,
+            }
+        message = (
+            f"Restore terrarium bundle from {source[:12]}\n\nRestored-From: {source}\n"
+        )
+        commit = _commit(git, files, entries, parent, message)
+        _push(git, remote, commit, parent)
+
+    try:
+        head, published = _read_back(remote, token, commit)
+        if head == commit:
+            validate_files(published)
+    except ValueError as error:
+        raise ReadbackError(f"Pushed {commit} but readback failed: {error}") from None
+    if head != commit:
+        raise ReadbackError(f"Pushed {commit} but the remote head reads {head}")
+    if {name: digest(raw) for name, raw in published.items()} != hashes:
+        raise ReadbackError(f"Pushed {commit} but remote file hashes differ")
+    return {
+        "commit": commit,
+        "outcome": "restored",
+        "parent": parent,
+        "restored_from": source,
+        "sha256": hashes,
+    }
