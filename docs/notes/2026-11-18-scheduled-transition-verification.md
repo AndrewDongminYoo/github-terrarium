@@ -77,6 +77,8 @@ Read-only probes showed that GitHub's `contributionsCollection` omits early cont
 The award invariants above still hold because awards never fall, but the bootstrap's first day (2026-10-18) is under-awarded by 6 XP and `current_traits` drifts down by each day's loss.
 [Issue #57](https://github.com/AndrewDongminYoo/github-terrarium/issues/57) owns the probe outputs, the measured impact, and the proposed fix; the published counts for the first window day are therefore not complete.
 
+Update (2026-11-19): the fix merged in PR [#59](https://github.com/AndrewDongminYoo/github-terrarium/pull/59), and the next scheduled run kept its first window day's counts ([acceptance evidence](2026-11-19-acceptance-evidence.md)); the stored 2026-10-18 and 2026-10-19 records keep their values as an accepted limitation.
+
 ## Not verified
 
 - A distribution of scheduled start delays; only this one run is recorded.
