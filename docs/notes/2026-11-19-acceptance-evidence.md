@@ -39,7 +39,7 @@ Its state comparison against `b927495`: total awarded XP rose from 2094 to 2154,
 
 ### Privileged-credential collection (AC-05)
 
-`python -m github_terrarium collect --start 2026-11-12 --end 2026-11-19` ran with a local `gh` token whose scopes include `repo`, so it can read the owner's private repositories.
+`GH_TOKEN="$(gh auth token)" python -m github_terrarium collect --config terrarium.toml --repository AndrewDongminYoo/github-terrarium --start 2026-11-12 --end 2026-11-19` ran from `main` at `12333c7` with a local `gh` token whose scopes include `repo`, so it can read the owner's private repositories.
 A separate script read every page of `pullRequestContributions` and `issueContributions` for the same window and classified each node.
 
 | Metric | Nodes in window | This repository | Public, counted | Collector equals public count per day |
@@ -49,6 +49,11 @@ A separate script read every page of `pullRequestContributions` and `issueContri
 
 None of the 74 private repositories owned by the account appears among the snapshot's 93 repositories, and this repository is absent from it.
 No node in the window was restricted or in a non-public repository.
+
+### Collection probe after the guidance change
+
+`AGENTS.md` changed in this release, and the repository's only diagnostic command is the read-only `probe`.
+`GH_TOKEN="$(gh auth token)" python -m github_terrarium probe --config terrarium.toml --repository AndrewDongminYoo/github-terrarium --day 2026-11-18` exited 0 on 2026-11-19 with `subject_id` `MDQ6VXNlcjgyOTk5NzE1`, no truncated connection, and samples of 10 PRs, 0 issues, 0 reviews, and 93 repositories; the PR, issue, and repository counts equal the 2026-11-18 record published at `cee9c44` and the snapshot above.
 
 ### README at 768 CSS pixels (AC-07, AC-08)
 
@@ -85,5 +90,6 @@ git diff --check
 ## Not claimed
 
 - On-time scheduled starts: both scheduled runs started more than 7 hours after the cron time.
-- Real-time updates: the image changes only when a run publishes, and caches may serve the previous image for up to `max-age=300`.
+- Real-time updates: the image changes only when a run publishes.
+- A cache delay bound: the image response carries `cache-control: max-age=300`, but only a cold-cache reload was observed, so the delay a viewer with a warm browser or CDN cache sees is not measured.
 - A frame rate, real-device behavior, or browsers beyond the cells above.
