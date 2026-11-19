@@ -17,6 +17,10 @@ REPOSITORIES = """query($login:String!, $cursor:String) {
     }
   }
 }"""
+# contributionsCollection silently omits early contributions of the first
+# requested day (issue #57), so each request starts one day before its window
+# and nodes outside the window are discarded by their own UTC day.
+REQUEST_PAD = timedelta(days=1)
 FIELDS = {
     "prs": ("pullRequestContributions", "pullRequest"),
     "issues": ("issueContributions", "issue"),
@@ -126,7 +130,7 @@ def collect(
                     end, window_start + timedelta(days=1 if metric == "reviews" else 30)
                 )
                 variables = {
-                    "from": window_start.isoformat() + "T00:00:00Z",
+                    "from": (window_start - REQUEST_PAD).isoformat() + "T00:00:00Z",
                     "to": window_end.isoformat() + "T00:00:00Z",
                 }
                 for node in pages(
