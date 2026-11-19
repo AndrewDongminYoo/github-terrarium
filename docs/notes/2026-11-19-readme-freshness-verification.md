@@ -44,7 +44,7 @@ The response was a cache `MISS`, so this observation did not show the 300-second
 ## Conclusion
 
 Freshness through the stable URL is observed for one later publication: a fresh signed-out page showed the new complete-activity label within 55 seconds of the output commit, without changing the embed.
-This is one observation in one browser context; a viewer whose browser or the raw CDN already holds the previous response can still see the older image for up to the 300-second `max-age`, and this note does not measure that case.
+This is one observation in one browser context; a viewer whose browser or the raw CDN already holds the previous response may still see the older image, and this note does not measure how long, because only a cold-cache reload was observed.
 
 ## Not verified
 

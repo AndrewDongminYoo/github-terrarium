@@ -1,6 +1,6 @@
 # GitHub Terrarium Specification
 
-Status: v1 contract; implementation in progress.
+Status: v1 contract; implemented, with evidence and accepted limitations in the [acceptance evidence](../notes/2026-11-19-acceptance-evidence.md).
 Decision date: 2026-11-15.
 This document defines intended behavior; see [README.md](../../README.md) for what is currently implemented.
 
@@ -128,7 +128,7 @@ The [Sanctuary paper-cut reference](../../assets/references/terrarium-papercut-s
 It defines the target composition and art treatment; its fixed login, dates, and stage are design-mockup labels, not collected activity or generated growth state.
 The reference is separate from packaged runtime assets and is not loaded by the renderer.
 Renderer version 3 assembles extracted paper-cut pieces under the [port plan](../plans/2026-11-16-papercut-renderer.md), with low/high activity comparisons and state-driven stages and traits.
-The fixed reference banner was verified in the public repository README; this does not establish GitHub playback of generated output or complete the fixture-gallery and visual-approval gates.
+The fixed reference banner was verified in the public repository README; GitHub playback of generated output ([README render verification](../notes/2026-11-17-readme-render-verification.md)), the [fixture gallery](../notes/fixture-gallery-verification.md), and the visual approval ([#13](https://github.com/AndrewDongminYoo/github-terrarium/issues/13)) were completed later.
 Source code and original artwork are released under the [MIT License](../../LICENSE).
 
 ### Scene format and motion
@@ -175,5 +175,5 @@ GitHub caching may delay the display of a new image; animation playback itself d
 
 ## Pending release decisions
 
-Calibrate performance budgets using the first implementation.
+None remain: the first implementation was measured against the performance budgets ([richest-fixture measurements](../notes/fixture-gallery-verification.md#richest-fixture-measurements)), and no detail reduction was needed.
 The architecture and implementation order are defined in [the technical design](architecture.md) and [the plan](../plans/implementation.md).
