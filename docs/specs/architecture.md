@@ -139,6 +139,7 @@ If a day's corrected count falls, retain awarded XP while updating recent-trait 
 Corrections outside the refreshed window are not automatically recovered; historical correction is a deliberate maintenance operation.
 
 Bound an automatic recovery to 90 activity days in a run, split into PR/issue query windows of at most 30 days and individual UTC-day review queries.
+Each query's `from` is one day before its window, because `contributionsCollection` omits early contributions of the first requested day without an error ([#57](https://github.com/AndrewDongminYoo/github-terrarium/issues/57)); every node is still filed by its own UTC day, and nodes outside the window are discarded.
 A larger gap fails with a recovery instruction and preserves the prior bundle.
 Deliberate recovery uses sequential, validated batches against a fixed final cutoff; historical batches do not update popularity.
 `grow --recover-through DATE` records the cutoff until it is reached; repeated batches are idempotent and changing an unfinished cutoff fails.
