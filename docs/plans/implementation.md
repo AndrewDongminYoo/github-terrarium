@@ -1,9 +1,9 @@
 # GitHub Terrarium Implementation Plan
 
-Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, offline output-bundle build/validation, output publication, and `generate` orchestration with one conflict recollection implemented; the fixture gallery visual direction was approved on 2026-11-16; the Actions workflows are added, and the first manual publication and same-day replay were verified on 2026-11-17, while a scheduled run and a later-day transition are not yet observed.
+Status: collection, normalization, persistent growth, paper-cut rendering, ambient motion, SVG validation, offline output-bundle build/validation, output publication, and `generate` orchestration with one conflict recollection implemented; the fixture gallery visual direction was approved on 2026-11-16; the Actions workflows are added, and the first manual publication and same-day replay were verified on 2026-11-17, and scheduled later-day transitions were observed on 2026-11-18 and 2026-11-19; release evidence is in the [acceptance evidence](../notes/2026-11-19-acceptance-evidence.md).
 Created: 2026-11-15.
 Implement the [product specification](../specs/terrarium.md) using the contracts in [the technical design](../specs/architecture.md).
-The initial documentation bootstrap is complete; runtime implementation has started.
+The initial documentation bootstrap is complete; runtime implementation is complete for v1.
 
 ## Delivery strategy
 
@@ -19,7 +19,7 @@ Do not activate the daily publisher until state and concurrency regressions pass
 ## Milestone 1: executable contracts and collection proof
 
 - [x] Add `pyproject.toml`, `src/github_terrarium/__main__.py`, `config.py`, `models.py`, and a documented `terrarium.toml` for Python 3.12.
-- [ ] Define the snapshot/state types, exact CLI flags, error categories, logical dates, and explicit generator-repository identity input.
+- [x] Define the snapshot/state types, exact CLI flags, error categories, logical dates, and explicit generator-repository identity input.
 - [x] Implement a minimal read-only collection spike that resolves the target user and one complete page of each required connection.
 - [x] Verify public access in an actual GitHub Actions run using its repository `GITHUB_TOKEN`; run 43690047131 passed on `aaa3759`.
 - [x] Prove that separate daily review queries recover a known user's reviews on the same public PR across two UTC days; stop and revise the review source contract if that proof fails or remains unavailable.
@@ -100,11 +100,11 @@ Traceability: AC-04, AC-06, AC-10, and AC-11.
 ## Milestone 7: release validation and documentation
 
 - [x] Publish a demonstration README in this repository that embeds the generated SVG; do not edit the operator's separate profile repository without authorization.
-- [ ] Verify animation through GitHub's rendered image, freshness labeling, caching behavior, and mobile-width readability.
-- [ ] Measure real rendering behavior for the richest fixture and record devices/browsers used; reduce expensive detail if the initial budget is insufficient.
+- [x] Verify animation through GitHub's rendered image, freshness labeling, caching behavior, and mobile-width readability.
+- [x] Measure real rendering behavior for the richest fixture and record devices/browsers used; reduce expensive detail if the initial budget is insufficient.
 - [x] Calibrate the proposed scoring constants against the fixture gallery and freeze scoring version 1 before ongoing production growth ([#20](https://github.com/AndrewDongminYoo/github-terrarium/issues/20#issuecomment-6932925175), 2026-11-17).
 - [x] Select a license with the operator before distributing reusable code/art and retain provenance for any adopted material.
-- [ ] Update README status, setup steps, actual commands, and recovery instructions; preserve visible review and verification evidence with the release work.
+- [x] Update README status, setup steps, actual commands, and recovery instructions; preserve visible review and verification evidence with the release work.
 
 Acceptance: AC-01 through AC-12 have recorded evidence, the visual direction is approved, and one real scheduled transition is observed.
 Release notes must distinguish tested behavior from known gaps; no full-browser or real-time guarantees without evidence.
@@ -140,3 +140,13 @@ Keep captures, output commit, browser/version, viewport, motion preference, and 
 For every milestone, report changed files, checks actually run, skipped checks, remaining risks, and the next eligible milestone.
 Keep planned commands clearly separated from commands that exist and have passed.
 The bootstrap is complete when the repository and these documents are published and read back; that does not complete any runtime milestone above.
+
+## Reconciliation (2026-11-19)
+
+The shipped code and the [acceptance evidence](../notes/2026-11-19-acceptance-evidence.md) are the authority for the four boxes checked on this date; the step text above is unchanged.
+
+- Milestone 1 contracts: snapshot and state validation (`models.py`, `state.py`), the CLI flags and exit codes, and the explicit `--repository` input (`test_config.py` `test_requires_explicit_repository`) are implemented and tested.
+- Milestone 7 rendered-image check: animation and reduced motion in the real README at 360, 768, and 900 pixels, and freshness after a later publication ([README render](../notes/2026-11-17-readme-render-verification.md), [README freshness](../notes/2026-11-19-readme-freshness-verification.md)); WebKit reduced motion stays pending as an accepted limitation.
+- Milestone 7 rendering measurement: recorded for the richest fixture on one headless host ([fixture gallery](../notes/fixture-gallery-verification.md#richest-fixture-measurements)); no detail reduction was needed.
+- Milestone 7 README and evidence: setup and recovery were documented in PR [#55](https://github.com/AndrewDongminYoo/github-terrarium/pull/55), and the status and evidence index in issue [#30](https://github.com/AndrewDongminYoo/github-terrarium/issues/30).
+- Milestone 4 gallery: the Linux cells named as pending above were completed later ([fixture gallery reconciliation](../notes/fixture-gallery-verification.md#reconciliation-first-linux-run-2026-11-17)).

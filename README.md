@@ -11,11 +11,12 @@
 A small living world shaped by your GitHub activity.
 Stars bring flowers and fireflies, forks spread seedlings, pull requests grow plants, reviews enrich a pond, and issues add mushrooms.
 
-**Status: public collection, persistent growth, and animated SVG rendering implemented.**
+**Status: v1 implemented and running on its daily schedule: public collection, persistent growth, animated SVG rendering, and the scheduled workflow.**
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
 The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, a low-level `publish` command pushes a validated bundle to the `output` branch, `generate` connects collection, growth, building, and publication with one fresh recollection after a conflict, and a manual `restore` command brings back an earlier output bundle as a new commit; a development-only browser fixture gallery checks the images through HTML `img` elements, and the guarded daily workflow `generate.yml` runs `generate` on a schedule and on manual dispatch.
 The first habitat was published by a manual bootstrap run on 2026-11-17, and a same-day replay reported `no-change`; see [publication verification](docs/notes/2026-11-17-publication-verification.md).
 The first scheduled run, on 2026-11-18, started 7 hours 16 minutes late and published the next day's growth; see [scheduled transition verification](docs/notes/2026-11-18-scheduled-transition-verification.md).
+The [acceptance evidence](docs/notes/2026-11-19-acceptance-evidence.md) maps AC-01 through AC-12 to tests, notes, and live runs, and lists the accepted limitations.
 
 ## Run the collection probe
 

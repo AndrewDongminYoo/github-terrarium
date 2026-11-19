@@ -1,6 +1,6 @@
 # GitHub Terrarium Technical Design
 
-Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, offline bundle build/validation, output publication, the `generate` orchestration with one conflict recollection, and the `restore` maintenance command are implemented; the scheduled workflow remains planned.
+Status: v1 design; public collection, persistent growth, ambient SVG rendering, SVG validation, offline bundle build/validation, output publication, the `generate` orchestration with one conflict recollection, and the `restore` maintenance command are implemented, and the `generate.yml` workflow runs on its daily schedule.
 Decision date: 2026-11-15.
 The [product specification](terrarium.md) owns behavior and scoring constants.
 
@@ -314,7 +314,7 @@ The dispatch input `bootstrap` defaults to `false` and is the only path to `--bo
 The schedule is active once the workflow is on the default branch.
 Until a manual dispatch with `bootstrap` creates `output`, every scheduled run fails with "Output branch is absent" and a failure summary.
 An `output` ref without a valid bundle fails every run, including a bootstrap dispatch, with "Existing output is invalid"; the workflow never deletes or resets it.
-Activation gates: the visual approval ([#13](https://github.com/AndrewDongminYoo/github-terrarium/issues/13)), the scoring version 1 freeze ([#20](https://github.com/AndrewDongminYoo/github-terrarium/issues/20)), and the license selection ([#21](https://github.com/AndrewDongminYoo/github-terrarium/issues/21)) are complete; the first manual bootstrap and a same-day replay ran on 2026-11-17 ([#26](https://github.com/AndrewDongminYoo/github-terrarium/issues/26), [publication verification](../notes/2026-11-17-publication-verification.md)), and a scheduled run and a later-day transition remain unverified.
+Activation gates: the visual approval ([#13](https://github.com/AndrewDongminYoo/github-terrarium/issues/13)), the scoring version 1 freeze ([#20](https://github.com/AndrewDongminYoo/github-terrarium/issues/20)), and the license selection ([#21](https://github.com/AndrewDongminYoo/github-terrarium/issues/21)) are complete; the first manual bootstrap and a same-day replay ran on 2026-11-17 ([#26](https://github.com/AndrewDongminYoo/github-terrarium/issues/26), [publication verification](../notes/2026-11-17-publication-verification.md)), and scheduled later-day transitions were verified on 2026-11-18 and 2026-11-19 ([scheduled transition verification](../notes/2026-11-18-scheduled-transition-verification.md), [README freshness verification](../notes/2026-11-19-readme-freshness-verification.md)).
 
 `generate --summary PATH` appends one Markdown summary to `PATH` and never truncates it.
 A success reports `published` or `no-change`, the subject ID, the activity interval, recovered gap days, the stock observation day, the XP delta, the `state.json` and `terrarium.svg` byte sizes, the output commit, and the attempt count.
