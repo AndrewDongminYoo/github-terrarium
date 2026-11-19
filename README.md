@@ -249,6 +249,7 @@ Success prints one JSON result with the outcome, the restored-from commit, the n
 The image label and the manifest's `complete_activity_day` name the last complete UTC activity day, which is the day before the run; the manifest's `stock_observation_day` is the run's own UTC date, on which stars and forks were read.
 After a dropped or failed run, the published label stays on the earlier day until the next successful run, which also collects the missed days, so no growth is lost.
 GitHub serves the image through caches, so a reader can see the previous image for a while after a publication; the `manifest.json` on `output` is the authority for what was published.
+The raw image is served with `cache-control: max-age=300`; on 2026-11-19 a fresh signed-out page showed a new publication within 55 seconds of its output commit ([README freshness verification](docs/notes/2026-11-19-readme-freshness-verification.md)).
 Keep the URL stable: a query string or another cache-busting URL is not supported.
 
 ## Rehearse recovery locally
