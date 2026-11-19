@@ -15,7 +15,7 @@ Stars bring flowers and fireflies, forks spread seedlings, pull requests grow pl
 A paginated public collector, local growth-state reconciliation, read-only API probe, and offline checks are implemented.
 The paper-cut SVG renderer, bounded ambient motion, and offline SVG validator are available as Python APIs, and offline `build`/`validate` commands produce and check the three-file output bundle, a low-level `publish` command pushes a validated bundle to the `output` branch, `generate` connects collection, growth, building, and publication with one fresh recollection after a conflict, and a manual `restore` command brings back an earlier output bundle as a new commit; a development-only browser fixture gallery checks the images through HTML `img` elements, and the guarded daily workflow `generate.yml` runs `generate` on a schedule and on manual dispatch.
 The first habitat was published by a manual bootstrap run on 2026-11-17, and a same-day replay reported `no-change`; see [publication verification](docs/notes/2026-11-17-publication-verification.md).
-No scheduled run has been verified.
+The first scheduled run, on 2026-11-18, started 7 hours 16 minutes late and published the next day's growth; see [scheduled transition verification](docs/notes/2026-11-18-scheduled-transition-verification.md).
 
 ## Run the collection probe
 
