@@ -1,14 +1,14 @@
 {
-  "complete_activity_day": "2026-11-20",
+  "complete_activity_day": "2026-11-21",
   "manifest_version": 1,
   "renderer_version": 3,
   "schema_version": 1,
   "scoring_version": 1,
   "sha256": {
-    "state.json": "82d1340d680b2b77f8dd7f5f22bd454ff2c626602806765b85e43899a6d5d23f",
-    "terrarium.svg": "0026354d0a5269ba50f9b6686ec748be5075ab3aa5428e65f7dc839448f96859"
+    "state.json": "cfa7f9f081565e916cf976638b4fdacb6c2445d3d43384c758ab68a7e61fc523",
+    "terrarium.svg": "8b5ae62aa809801a69e0841d0e975759ec8049ff213caaf2854ba2294867f734"
   },
   "source_commit": "c051b33d1476ea6e2f87b5c2e13e3bb2d8b2ac35",
-  "stock_observation_day": "2026-11-21",
+  "stock_observation_day": "2026-11-22",
   "subject_id": "MDQ6VXNlcjgyOTk5NzE1"
 }
